@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>XMLViewGUI</RootNamespace>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>8</LangVersion>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>res/App.ico</ApplicationIcon>
+    <Nullable>enable</Nullable>
+    <WarningsAsErrors>8600;8601;8602;8603;8604;8613;8619;8620;8625</WarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyName>XMLViewGUI</AssemblyName>
+    <Description>XML File Viewer(mainly as testbed for other NodeTree GUI code)</Description>
+    <Product>XMLViewGUI</Product>
+	<ProductUrl>https://github.com/BlazesRus/NodeTreeGUI</ProductUrl>
+  </PropertyGroup>
+  <ItemGroup><!--Package References-->
+
+  </ItemGroup>
+  <PropertyGroup Label="UserMacros">
+    <BlazesGlobalCode>C:\Users\BlazesRus\Documents\GitHub\MultiPlatformGlobalCode\GlobalCode</BlazesGlobalCode>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_QuadVector\QuadVector.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_QuadVector\QuadVectorFunctions.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_StringFunctions\StringFunctions.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_VariableConversionFunctions\VariableConversionFunctions.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\StringVectorList.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\VariableTypeLists.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\VariableVectorFunctions.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="$(BlazesGlobalCode)\tsl\ordered_hash.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\tsl\ordered_map.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\tsl\ordered_set.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_IniData\CustomDictionary.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_IniData\CustomOrderedDictionary.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_IniData\IndexedDictionary.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_QuadVector\QuadVector.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_QuadVector\QuadVectorFunctions.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_StringFunctions\StringFunctions.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_VariableConversionFunctions\VariableConversionFunctions.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\StringVectorList.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\VariableList.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\VariableTypeLists.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\VariableVectorFunctions.h" />
+	
+  </ItemGroup>
+</Project>
