@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{4E8A6DB2-098B-4E6F-BD6B-A0BE59FE8B89}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>BhvTreeEditor</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+    <BlazesGlobalCode>C:\Users\BlazesRus\Documents\GitHub\MultiPlatformGlobalCode\GlobalCode</BlazesGlobalCode>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_QuadVector\QuadVector.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_QuadVector\QuadVectorFunctions.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_StringFunctions\StringFunctions.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_VariableConversionFunctions\VariableConversionFunctions.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\StringVectorList.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\VariableTypeLists.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\VariableVectorFunctions.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="$(BlazesGlobalCode)\tsl\ordered_hash.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\tsl\ordered_map.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\tsl\ordered_set.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_IniData\CustomOrderedDictionary.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_StringFunctions\StringFunctions.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_VariableConversionFunctions\VariableConversionFunctions.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\VariableList.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\VariableTypeLists.h" />
+    <ClInclude Include="$(BlazesGlobalCode)\GlobalCode_VariableLists\VariableVectorFunctions.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\DynMultiView\StdMultiView.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="..\DynMultiView\StdMultiView.h" />
+    <ClCompile Include="..\DynMultiView\AboutDlg.cpp">
+      <PrecompiledHeader>..\DynMultiView\StdMultiView.h</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\DynMultiView\MultiViewDoc.cpp">
+      <PrecompiledHeader>..\DynMultiView\StdMultiView.h</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\DynMultiView\MultiView.cpp">
+      <PrecompiledHeader>..\DynMultiView\StdMultiView.h</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\DynMultiView\MainFrm.cpp">
+      <PrecompiledHeader>..\DynMultiView\StdMultiView.h</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="..\DynMultiView\AboutDlg.h" />
+    <ClInclude Include="..\DynMultiView\MultiViewDoc.h" />
+    <ClInclude Include="..\DynMultiView\MultiView.h" />
+    <ClInclude Include="..\DynMultiView\MainFrm.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\BasicXMLGUI\ContextMenu.cpp" />
+    <ClCompile Include="..\BasicXMLGUI\StdAfx.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\BasicXMLGUI\ArgList.h" />
+    <ClInclude Include="..\BasicXMLGUI\ArgStringList.h" />
+    <ClInclude Include="..\BasicXMLGUI\DataNode.h" />
+    <ClInclude Include="..\BasicXMLGUI\ContextMenu.h" />
+    <ClInclude Include="..\BasicXMLGUI\DataDictionary.h" />
+    <ClInclude Include="..\BasicXMLGUI\StdAfx.h" />
+    <ClInclude Include="..\BasicXMLGUI\UIntVector.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="StdBhvTree.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClInclude Include="StdBhvTree.h" />
+	<ClInclude Include="AppResources.h" />
+    <ClCompile Include="NodeViewApp.cpp" />
+    <ClInclude Include="NodeViewApp.h" />
+    <ClInclude Include="TreeView.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AppResources.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\AppResources.rc2" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,6 +1,6 @@
 //Microsoft Developer Studio generated resource script.
 //
-#include "resource.h"
+#include "AppResources.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON    DISCARDABLE     "res\\App.ico"
-IDR_MULTIVTYPE          ICON    DISCARDABLE     "res\\AppDoc.ico"
+IDR_MULTIVTYPE          ICON    DISCARDABLE     "res\\App.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -311,7 +311,7 @@ LANGUAGE 0x21, 0x1
 
 1 TEXTINCLUDE DISCARDABLE
 BEGIN
-    "resource.h\0"
+    "AppResources.h\0"
 END
 
 2 TEXTINCLUDE DISCARDABLE
