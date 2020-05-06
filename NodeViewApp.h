@@ -3,7 +3,6 @@
 // Multi-view code based on https://www.codeproject.com/Articles/7686/Using-Multiview
 // ***********************************************************************
 #pragma once
-#include NodeViewApp_IncludeGuard
 #if !defined(NodeViewApp_IncludeGuard)
 #define NodeViewApp_IncludeGuard
 
@@ -11,7 +10,7 @@
 	#error include 'StdBhvTree.h' before including this file for PCH
 #endif
 
-#include "resource.h"       // main symbols
+#include "AppResources.h"       // main symbols
 
 /////////////////////////////////////////////////////////////////////////////
 // NodeViewApp:
@@ -40,7 +39,6 @@ public:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 

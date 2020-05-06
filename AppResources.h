@@ -2,17 +2,11 @@
 // Microsoft Developer Studio generated include file.
 // Used by MultiView.rc
 //
-#define IDD_ABOUTBOX                    100
-#define IDR_MAINFRAME                   128
-#define IDR_MULTIVTYPE                  129
-#define ID_VIEW_PRIMARYVIEW             32771
-#define ID_VIEW_SECONDARYVIEW           32772
-#define IDM_ABOUTBOX                    0x0010
-#define IDS_ABOUTBOX                    101
+#include "..\DynMultiView\resource.h"
 
-#define IDD_NODETEXT                    129
-#define IDC_ST_TREE                     1000
-#define IDC_EF_TEXT                     1001
+#define ID_VIEW_PRIMARYVIEW               30771
+#define ID_VIEW_SECONDARYVIEW               30772
+//#define ID_VIEW_SWITCHVIEW              30773
 
 // Next default values for new objects
 // 

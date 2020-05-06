@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="OrderedMap">
+      <UniqueIdentifier>{4f5a463f-30b7-4d9f-8ca6-0e486b566a7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GlobalCodeSource">
+      <UniqueIdentifier>{3ec74aa6-6ac5-4eeb-aa98-da33db175a41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GlobalCodeHeaders">
+      <UniqueIdentifier>{3d05652d-9a55-419b-8603-b3066ad23f05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Multiview">
+      <UniqueIdentifier>{ef602cd5-97c6-4415-a68b-602fd406d116}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="NodeViewApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BasicXMLGUI\StdAfx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StdBhvTree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\VariableLists\VariableVectorFunctions.cpp">
+      <Filter>GlobalCodeSource</Filter>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\VariableLists\VariableTypeLists.cpp">
+      <Filter>GlobalCodeSource</Filter>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\VariableConversionFunctions\VariableConversionFunctions.cpp">
+      <Filter>GlobalCodeSource</Filter>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\VariableLists\StringVectorList.cpp">
+      <Filter>GlobalCodeSource</Filter>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\StringFunctions\StringFunctions.cpp">
+      <Filter>GlobalCodeSource</Filter>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\QuadVector\QuadVectorFunctions.cpp">
+      <Filter>GlobalCodeSource</Filter>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\QuadVector\QuadVector.cpp">
+      <Filter>GlobalCodeSource</Filter>
+    </ClCompile>
+    <ClCompile Include="$(BlazesGlobalCode)\AltNum\MediumDec.cpp">
+      <Filter>GlobalCodeSource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DynMultiView\MultiViewDoc.cpp">
+      <Filter>Multiview</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DynMultiView\MainFrm.cpp">
+      <Filter>Multiview</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DynMultiView\StdMultiView.cpp">
+      <Filter>Multiview</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeNodeText.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="NodeViewApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BasicXMLGUI\ArgStringList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BasicXMLGUI\StdAfx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BasicXMLGUI\UIntVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StdBhvTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BlazesGlobalCode)\tsl\ordered_set.h">
+      <Filter>OrderedMap</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BlazesGlobalCode)\tsl\ordered_map.h">
+      <Filter>OrderedMap</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BlazesGlobalCode)\tsl\ordered_hash.h">
+      <Filter>OrderedMap</Filter>
+    </ClInclude>
+    <ClInclude Include="ArgList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BlazesGlobalCode)\QuadVector\QuadVectorFunctions.h">
+      <Filter>GlobalCodeHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BlazesGlobalCode)\QuadVector\QuadVector.h">
+      <Filter>GlobalCodeHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BlazesGlobalCode)\AltNum\MediumDec.h">
+      <Filter>GlobalCodeHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BlazesGlobalCode)\IniData\CustomOrderedDictionary.h">
+      <Filter>GlobalCodeHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BlazesGlobalCode)\VariableConversionFunctions\VariableConversionFunctions.h">
+      <Filter>GlobalCodeHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BlazesGlobalCode)\VariableLists\VariableVectorFunctions.h">
+      <Filter>GlobalCodeHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BlazesGlobalCode)\VariableLists\VariableTypeLists.h">
+      <Filter>GlobalCodeHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BlazesGlobalCode)\VariableLists\VariableList.h">
+      <Filter>GlobalCodeHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(BlazesGlobalCode)\StringFunctions\StringFunctions.h">
+      <Filter>GlobalCodeHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="AppResources.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DynMultiView\MultiViewDoc.h">
+      <Filter>Multiview</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DynMultiView\MainFrm.h">
+      <Filter>Multiview</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DynMultiView\AboutDlg.h">
+      <Filter>Multiview</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DynMultiView\StdMultiView.h">
+      <Filter>Multiview</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DynMultiView\resource.h">
+      <Filter>Multiview</Filter>
+    </ClInclude>
+    <ClInclude Include="UIntDic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TreeNodeText.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="APPDefines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AppResources.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\AppResources.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

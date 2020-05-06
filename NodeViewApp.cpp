@@ -4,10 +4,11 @@
 #include "StdBhvTree.h"
 #include "NodeViewApp.h"
 
-#include "MainFrm.h"
-#include "MultiViewDoc.h"
-#include "MultiView.h"
-#include "AboutDlg.h"
+#include "..\DynMultiView\MainFrm.h"
+#include "..\DynMultiView\MultiViewDoc.h"
+#include "..\DynMultiView\AboutDlg.h"
+
+#include "TreeView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -61,7 +62,7 @@ BOOL NodeViewApp::InitInstance()
 		IDR_MAINFRAME,
 		RUNTIME_CLASS(MultiViewDoc),
 		RUNTIME_CLASS(MainFrame),       // main SDI frame window
-		RUNTIME_CLASS(MultiView));
+		RUNTIME_CLASS(TreeView));
 	AddDocTemplate(pDocTemplate);
 
 	// Parse command line for standard shell commands, DDE, file open
@@ -74,7 +75,7 @@ BOOL NodeViewApp::InitInstance()
 
 	CView* pActiveView = ((CFrameWnd*) m_pMainWnd)->GetActiveView();
 	m_pPrimaryView = pActiveView;
-	m_pSecondaryView = (CView*) new MultiView;
+	m_pSecondaryView = (CView*) new TreeView;
 
 	CDocument* pDoc = ((CFrameWnd*)m_pMainWnd)->GetActiveDocument();
 
@@ -104,7 +105,7 @@ void NodeViewApp::OnAppAbout()
 // NodeViewApp message handlers
 
 
-void NodeViewApp::OnViewMultiView() 
+void NodeViewApp::OnViewSecondaryView()
 {
 	// TODO: Add your command handler code here
 	UINT temp = ::GetWindowLong(m_pSecondaryView->m_hWnd, GWL_ID);
@@ -120,7 +121,7 @@ void NodeViewApp::OnViewMultiView()
 	
 }
 
-void NodeViewApp::OnViewFirstview() 
+void NodeViewApp::OnViewPrimaryView()
 {
  	// TODO: Add your command handler code here
     
