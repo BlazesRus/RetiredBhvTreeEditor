@@ -11,6 +11,7 @@
 #include <typeinfo>
 #include "..\BasicXMLGUI\UIntVector.h"
 #include "DataNode.h"
+#include "RootNode.h"
 #include "DataDictionary.h"
 #include "UIntDic.h"
 #include "APPDefines.h"
@@ -46,8 +47,6 @@ public:// Construction
 	/// </summary>
 	TreeView()
 	{
-		//m_pTopNode = new DataNode("No File Loaded");	// The tree top
-
 		m_iIndent = 16;				// Indentation for tree branches
 		m_iPadding = 4;				// Padding between tree and the control border
 
@@ -61,12 +60,9 @@ public:// Construction
 
 		// Safeguards
 		SetTextFont(8, FALSE, FALSE, "Arial Unicode MS");
-		//dNode.Reset()
 
 		//PrimaryTarget = "";
 		//SecondaryTarget = "";
-		
-		//Test Code
 		
 	}
 
@@ -75,9 +71,7 @@ public:// Construction
 	/// </summary>
 	virtual ~TreeView()
 	{
-		NodeBank.clear();
-		NodeLinks.clear();
-
+    Reset();
 		m_Font.DeleteObject();
 	}
 
@@ -105,9 +99,32 @@ protected:
 
 	//Places all root-nodes at or below X coordinate of RootEnd
 	long RootEnd;
+  RootNode TreeStart;
+  RootNode EventDataStart;
+  RootNode VariableDataStart;
+  unsigned int ClassNodeStart;
+  short NodeSearchRange=0;
 
-	//string PrimaryTarget;
-	//string SecondaryTarget;
+	//Holds data of Name from hkbBehaviorGraphStringData(Event & Variable Names)
+	std::string StringDataName = "";
+	//Holds data of Signature from hkbBehaviorGraphStringData(Event & Variable Names)
+	std::string StringDataSignature = "";
+	//Holds data of Name from hkbVariableValueSet (Variable Values)
+	std::string ValueDataName = "";
+	//Holds data of Signature from hkbVariableValueSet (Variable Values)
+	std::string ValueDataSignature = "";
+	//Holds data of Name from hkbBehaviorGraphData (Variable Types)
+	std::string TypeDataName = "";
+	//Holds data of Signature from hkbBehaviorGraphData (Variable Types)
+	std::string TypeDataSignature = "";
+
+	//Stores link to Havok class of type hkbVariableValueSet
+	std::string variableInitialValues;
+	//Stores link to Havok class of type hkbBehaviorGraphStringData
+	std::string stringData;
+
+	//Typically 4 Element Array of what seems to be coordinate positions
+	QuadVectorList quadVariableValues;
 public:
 	/// <summary>
 	/// Loads the data from file.
@@ -124,13 +141,18 @@ public:
 	bool SaveDataToFile(std::string FilePath);
 
 	/// <summary>
-	/// Resets this instance.
+	/// Resets the storage of instance.
 	/// </summary>
 	void Reset()
 	{
 		RootNodes.clear();
 		NodeBank.clear();
 		NodeLinks.clear();
+
+		EventBank.clear();
+    VariableBank.clear();
+		AttriNameBank.clear();
+		CharPropBank.clear();
 	}
 
 	// Operations
@@ -233,18 +255,63 @@ public:
 		m_crDefaultTextColor = crText;
 	}
 
+	/// <summary>
+	/// Toggle node between open and closed
+	/// </summary>
+	bool ToggleNode(CPoint point, BOOL bInvalidate = FALSE)
+	{
+    //1=RootNode;2=InfoNode;3=DataNode
+    bool FailedToFindNode = false;
+    RootNode* TargetNode = nullptr;
+		InfoNode* TargetInfoNode = nullptr;
+		DataNode* TargetNode = nullptr;
+
+		if(point.x<RootEnd)//Search for RootNode nearest to point
+		{
+        RootNode = RetrieveNearestRootNode(point);
+        if(RootNode!=nullptr){ToggleNode(RootNode, bInvalidate);FailedToFindNode=false;}
+		}
+		else
+		{
+        if(point>TreeStart->CoordData.bottom)//Main NodeTree nodes
+        {
+           TargetNode = RetrieveNodeByPoint(point);
+           if(TargetNode!=nullptr){ToggleNode(TargetNode, bInvalidate);FailedToFindNode=false;}
+        }
+        else
+        {
+           TargetInfoNode = RetrieveNodeByPoint(point);
+           if(TargetInfoNode!=nullptr){ToggleNode(TargetInfoNode, bInvalidate);FailedToFindNode=false;}
+        }
+		}
+    return FailedToFindNode;
+	}
 
 	/// <summary>
 	/// Toggle node between open and closed
 	/// </summary>
-	/// <param name="pNode">The p node.</param>
-	/// <param name="bInvalidate">The b invalidate.</param>
-	void ToggleNode(DataNode* pNode, BOOL bInvalidate = FALSE)
+	template <typename NodeType>
+	void ToggleNode(NodeType* pNode, BOOL bInvalidate = FALSE)
 	{
-		ToggleNode(pNode, bInvalidate);
+		ASSERT(pNode != NULL);
+
+		pNode->bOpen = !(pNode->bOpen);
+
+		if (bInvalidate)
+			Invalidate();
 	}
 
 protected:
+	void AddAllSubNodes(DataNode* pNode, UIntVector& TargetNodes)
+	{
+		DataNode* targetNode;
+		for(UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+		{
+			targetNode = this->NodeBank[targetNodeIndex];
+			AddAllSubNodes(targetNode, TargetNodes);
+		}
+	}
+
 	void DeleteNode(unsigned int nodeIndex, BOOL bInvalidate = FALSE)
 	{
 		UIntVector TargetNodes;
@@ -268,19 +335,56 @@ protected:
 			Invalidate();
 	}
 
-	void AddAllSubNodes(DataNode* pNode, UIntVector& TargetNodes)
+	int DrawNodesFromRoot(CDC* pDC, int x, int y, CRect rFrame)
 	{
+		int		iDocHeight = 0;		// Total document height
+		CRect	rNode;
+
+		// The node's location and dimensions on screen
+		rNode.left = x;
+		rNode.top = y;
+		rNode.right = rFrame.right - m_iPadding;
+		rNode.bottom = y + m_iLineHeight;
+
+		//pNode->rNode.CopyRect(rNode);		// Record the rectangle
+
+    // MULTILINE TEXT - begins
+    //CString	cs = pNode->TagName.c_str();
+    int		iPos;
+    int ArgSize;
+    
+
+    // Height of a line of text(All parts of Node at same height--limiting to single line nodes for now unless need to expand)
+    rNode.bottom = rNode.top + m_iLineHeight;
+
+    // Find out how much text fits in one line
+    //iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
+
+/*		//Add in SubTrees
+		m_pTopNode.NodeBank.Add("Event Data", 1);
+		//Keys ==EventNames; SubKeys for Events:
+		m_pTopNode.NodeBank.Add("Variable Data", 1);//For Displaying and editing Variable Data
+		m_pTopNode.NodeBank.Add("Character Property Data", 1);
+		m_pTopNode.NodeBank.Add("Attribute Name Data", 1);
+		//Keys ==VariableNames; SubKeys for Variables:Value,Role
+		m_pTopNode.NodeBank.Add("Linked Conditional Tree", 1);//Condition Classes linked together to other nodes in more descriptive way
+		m_pTopNode.NodeBank.Add("Usage Linked Tree", 1);//Classes Linked together based on calls to other nodes
+		m_pTopNode.NodeBank.Add("Tree Data", 1);//Actually Tree data inside here but in other types (Except for data for Events and Variables etc)
+*/
+
+		pDC->SetTextColor(crOldText);
+		
 		DataNode* targetNode;
-		for(UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+		for (UIntVector::iterator CurrentVal = RootNodes->begin(), LastVal = RootNodes->end(); CurrentVal != LastVal; ++CurrentVal)
 		{
-			targetNode = this->NodeBank[targetNodeIndex];
-			AddAllSubNodes(targetNode, TargetNodes);
+			if (*CurrentVal == targetVal)
+			{
+				targetNode = pNode->NodeBank[*CurrentVal];
+				iDocHeight = DrawNodesRecursiveToNodes(pDC, pNode, targetNode, x + m_iIndent, y + pNode->CoordData.Height(), rFrame);
+			}
 		}
-	}
 
-	int DrawNodesFromRoot(CDC* pDC)
-	{
-
+    return iDocHeight;// + pNode->rNode.Height();
 	}
 
 	int DrawNodesRecursive(CDC* pDC, DataNode* pNode, int x, int y, CRect rFrame);
@@ -373,6 +477,33 @@ protected:
 	{
 	
 	}
+
+  RootNode* RetrieveNearestRootNode(CPoint point)
+  {
+     RootNode* targetNode = nullptr;
+     return targetNode;
+  }
+
+  InfoNode* RetrieveInfoNodeByPoint(CPoint point)
+  {
+     InfoNode* targetNode = nullptr;
+     switch(NodeSearchRange)
+     {
+         case 1://EventNode NodeTree
+         break;
+         case 2://VariableNode NodeTree
+         break;
+         default:
+         break;
+     }
+     return targetNode;
+  }
+
+  DataNode* RetrieveNodeByPoint(CPoint point)
+  {
+     DataNode* targetNode = nullptr;
+     return targetNode;
+  }
 	// Message handlers
 
 	// Overrides
@@ -457,13 +588,31 @@ protected:
 
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point)
 	{
-		//RecursiveNodeSearchByPoint(point);
-		//switch(dNode.NodeDetected)
-		//{
-		//	case 1:ToggleNode(dNode.detectedDataNode, bInvalidate); break;
-		//	default: 
-		//		CStatic::OnLButtonUp(nFlags, point); break;
-		//}
+    //1=RootNode;2=InfoNode;3=DataNode
+    short NodeTypeFound = 0;
+    RootNode* TargetNode = nullptr;
+		InfoNode* TargetInfoNode = nullptr;
+		DataNode* TargetNode = nullptr;
+
+		if(point.x<RootEnd)//Search for RootNode nearest to point
+		{
+        RootNode = RetrieveNearestRootNode(point);
+        if(RootNode!=nullptr){NodeTypeFound=1;}
+		}
+		else
+		{
+        if(point>TreeStart->CoordData.bottom)//Main NodeTree nodes
+        {
+           TargetNode = RetrieveNodeByPoint(point);
+           if(TargetNode!=nullptr){NodeTypeFound=3;}
+        }
+        else
+        {
+           TargetInfoNode = RetrieveNodeByPoint(point);
+           if(TargetInfoNode!=nullptr){NodeTypeFound=2;}
+        }
+		}
+    if(ToggleNode(point, bInvalidate)){CStatic::OnLButtonUp(nFlags, point);}
 	}
 
 	
@@ -495,16 +644,32 @@ protected:
 		// WM_CONTEXTMENU passes absolute coordinates, we need them local
 		ScreenToClient(&cp);
 
+    //1=RootNode;2=InfoNode;3=DataNode
+    short NodeTypeFound = 0;
+    RootNode* TargetNode = nullptr;
+		InfoNode* TargetInfoNode = nullptr;
 		DataNode* TargetNode = nullptr;
+
 		if(point.x<RootEnd)//Search for RootNode nearest to point
 		{
-
+        RootNode = RetrieveNearestRootNode(point);
+        if(RootNode!=nullptr){NodeTypeFound=1;}
 		}
 		else
 		{
-
+        if(point>TreeStart->CoordData.bottom)//Main NodeTree nodes
+        {
+           TargetNode = RetrieveNodeByPoint(point);
+           if(TargetNode!=nullptr){NodeTypeFound=3;}
+        }
+        else
+        {
+           TargetInfoNode = RetrieveNodeByPoint(point);
+           if(TargetInfoNode!=nullptr){NodeTypeFound=2;}
+        }
 		}
-		if(TargetNode!=nullptr)
+
+		if(NodeTypeFound!=0)
 		{
             ContextMenu contextMenuPopUp(&m_Font);
 
@@ -518,14 +683,86 @@ protected:
 
             // ADDING MENU ITEMS - Start
             
-			CString cs = TargetNode->TagName.c_str();
-			cs = cs.Left(45) + ((TargetNode->TagName.size() > 45) ? _T("...") : _T(""));
-
+			CString cs;
+      switch(NodeTypeFound)
+      {
+         case 1:
+			   cs = cs.Left(45) + _T("...");
+         break;
+         case 2:
+         cs = TargetInfoNode->TagName.c_str();
+			   cs = cs.Left(45) + ((TargetNode->TagName.size() > 45) ? _T("...") : _T(""));
+         break;
+         default:
+         cs = TargetNode->TagName.c_str();
+			   cs = cs.Left(45) + ((TargetNode->TagName.size() > 45) ? _T("...") : _T(""));
+         break;
+      }
 			contextMenuPopUp.AppendMenuItem(MF_DISABLED, WM_APP, cs, pDC);
 			contextMenuPopUp.AppendMenuItem(MF_SEPARATOR, 0, _T(""), pDC);
+      if(NodeTypeFound==1)
+      {
+      	contextMenuPopUp.AppendMenuItem(MF_DISABLED, 0, _T("Setting NodeSearchRange to this section"), pDC);
+				contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Load Tree from file"), pDC);
+				contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Save Tree to .xml file"), pDC);
+      }
+      else if(NodeTypeFound==2)
+      {
+         switch(NodeSearchRange)
+         {
+             case 1:
+				        contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Add New Variable"), pDC);
+				        //contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Copy Event to Other View"), pDC);
+             case 2:
+				        contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Add New Variable"), pDC);
+				        //contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Copy Event to Other View"), pDC);
+             default:
+             break;
+         }
+         contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Node"), pDC);
+      }
+      else
+      {
+         switch(TargetNode->NodeType)
+         {
+             //Event Link
+             case 92:
+             case 101:
+             case 111:
+                 break;
+             //Variable Link
+             case 93:
+             case 102:
+             case 112:
+                 break;
+             //Character Property Link
+             case 93:
+             case 103:
+             case 113:
+                 break;
+             //ClassNode Link
+             case 93:
+             case 103:
+             case 113:
+                 break;
+             default:
+             break;
+         }
+         if(TargetNode->NodeType==90)
+         {
+             //contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Arg Data"), pDC);
+         }
+         else{contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Node"), pDC);}
+				 contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYNODETEXT, _T("Modify Node Text"), pDC);
+				//contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_TOGGLECONNECTINGLINES, _T("Toggle Connecting Lines"), pDC);
+      }
 			switch(TargetNode->NodeType)
 			{
-			case 11:
+      case 89:
+				contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Load Tree from file"), pDC);
+				contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Save Tree to .xml file"), pDC);
+                break;
+			case 92:
 				contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Add New Event"), pDC);
 				//contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Copy Event to Other View"), pDC);
 				break;
@@ -536,25 +773,19 @@ protected:
 				break;
 			case 13:
 				break;
-            case 95:
-				contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Load Tree from file"), pDC);
-				contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Save Tree to .xml file"), pDC);
-                break;
 			default:
-				contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Node"), pDC);
-				contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYNODETEXT, _T("Modify Node Text"), pDC);
-				//contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_TOGGLECONNECTINGLINES, _T("Toggle Connecting Lines"), pDC);
+
 				break;
 			}
-            // ADDING MENU ITEMS - End
+      // ADDING MENU ITEMS - End
 
-            // Display the context menu
-            contextMenuPopUp.TrackPopupMenu(TPM_LEFTALIGN, point.x, point.y, this);
+      // Display the context menu
+      contextMenuPopUp.TrackPopupMenu(TPM_LEFTALIGN, point.x, point.y, this);
 
-            // Clean up
-            pDC->SelectObject(pOldFont);
-            pDC->RestoreDC(iSaved);
-            ReleaseDC(pDC);
+      // Clean up
+      pDC->SelectObject(pOldFont);
+      pDC->RestoreDC(iSaved);
+      ReleaseDC(pDC);
 		}
 	}
 
@@ -564,7 +795,7 @@ protected:
 };
 
 
-BEGIN_MESSAGE_MAP(TreeView, CStatic)
+BEGIN_MESSAGE_MAP(TreeView, CView)
 	ON_WM_PAINT()
 	ON_WM_SIZE()
 	ON_WM_VSCROLL()
@@ -572,7 +803,7 @@ BEGIN_MESSAGE_MAP(TreeView, CStatic)
 	ON_WM_MOUSEWHEEL()
 	ON_WM_CONTEXTMENU()
 	ON_COMMAND(CM_DELETENODE, OnCM_DeleteNode)
-	//ON_COMMAND(CM_MODIFYNODETEXT, OnCM_ModifyNodeText)
+	ON_COMMAND(CM_MODIFYNODETEXT, OnCM_ModifyNodeText)
 	//ON_COMMAND(CM_TOGGLECONNECTINGLINES, OnCM_ToggleConnectingLines)
 END_MESSAGE_MAP()
 #endif

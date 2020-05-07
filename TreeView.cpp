@@ -13,7 +13,7 @@ inline int TreeView::DrawNodesRecursive(CDC* pDC, DataNode* pNode, int x, int y,
     rNode.right = rFrame.right - m_iPadding;
     rNode.bottom = y + m_iLineHeight;
 
-    //pNode->rNode.CopyRect(rNode);		// Record the rectangle
+    //pNode->CoordData.CopyRect(rNode);		// Record the rectangle
 
     COLORREF crOldText = pDC->SetTextColor(m_crDefaultTextColor);
 
@@ -100,7 +100,7 @@ inline int TreeView::DrawNodesRecursive(CDC* pDC, DataNode* pNode, int x, int y,
     pDC->SetTextColor(crOldText);
     if (pNode->ChildNodes.empty())
     {
-        return pNode->rNode.Height();
+        return pNode->CoordData.Height();
     }
     else if (pNode->bOpen)// If the node is open AND it has children, then draw those
     {
@@ -112,7 +112,7 @@ inline int TreeView::DrawNodesRecursive(CDC* pDC, DataNode* pNode, int x, int y,
         }
     }
 
-    return iDocHeight + pNode->rNode.Height();
+    return iDocHeight + pNode->CoordData.Height();
 }
 
 inline void TreeView::DrawLinesRecursive(CDC* pDC, DataNode* pNode)
@@ -128,8 +128,8 @@ inline void TreeView::DrawLinesRecursive(CDC* pDC, DataNode* pNode)
     }
 
     // Where is the elbow joint of this connecting line?
-    int iJointX = pNode->nDisp.TagButton.left - m_iIndent - 6;
-    int iJointY = pNode->nDisp.TagButton.top + (m_iLineHeight / 2);
+    int iJointX = pNode->CoordData.left - m_iIndent - 6;
+    int iJointY = pNode->CoordData.top + (m_iLineHeight / 2);
     unsigned int TargetIndex = pNode->ParentIndex;
 
     // If the parent is not the root, throw a connecting line to it

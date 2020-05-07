@@ -28,27 +28,39 @@ class DataNode
 	
 	ArgList ArgData;
     //0 = Default
-    //1 = EventNode
-    //2 = VariableNode
-    //3 = Character Property
-    //11 = EventNode Link
-    //12 = VariableNode Link
-    //13 = Character Property Link
-	//Any at or above 100 reserved for TagContent
+	//-------Arg Data Stored as Separate nodes-------------------
+	//-------90 = Arg Field
+	//91 = Arg Element
+    //92 = EventNode Link(From ArgData)
+    //93 = VariableNode Link(From ArgData)
+	//94 = ClassNode Link(From ArgData)
+    //95 = Character Property Link(From ArgData)
+	//96 = Attribute Name Link(From ArgData)
+	//------Any at or above 100 reserved for TagContent------
 	//100 = SingleLine TagContent
-	//110 = Multiline TagContentElement
 	//101 = SingleLine Event Target
 	//102 = SingleLine Variable Target
 	//103 = SingleLine ClassNode Target
+	//104 = SingleLine Character Property Target
+	//105 = SingleLine Attribute Name Target
+	//------------------------------------------------------------------------
+	//110 = Multiline TagContentElement
     //111 = Multiline Event Target
     //112 = Multiline Variable Target
     //113 = Multiline ClassNode Target
+	//114 = Multiline Character Property Target
+	//115 = Multiline Attribute Name Target
     char NodeType;
 
 	/// <summary>
 	/// The b open
 	/// </summary>
 	BOOL    bOpen;
+	
+	/// <summary>
+	/// Node Coordinate Data(Current Position of Node in Tree)
+	/// </summary>
+	CRect		CoordData;
 public:
 	/// <summary>
 	/// Initializes a new instance of the <see cref="DataNode"/> class. (All Data Nodes must have display names)
@@ -57,7 +69,7 @@ public:
 	DataNode(std::string name)
 	{
 		TagName = name;
-		//rNode.SetRectEmpty();
+		CoordData.SetRectEmpty();
 		bOpen = TRUE;
 		NodeType = 0;
 	}
