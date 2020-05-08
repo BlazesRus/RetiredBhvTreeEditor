@@ -22,7 +22,7 @@
 #endif
 #endif
 
-#include "MultiviewPrecompile.h"
+#include "StdBhvTree.h"
 
 /// <summary>
 /// Class named ContextMenu.
@@ -121,11 +121,11 @@ protected:
 	/// <summary>
 	/// Context Menu color references
 	/// </summary>
-	static COLORREFm_crText = RGB(70, 36, 36);
-	static COLORREF m_crBackground = RGB(253, 249, 249);
-	static COLORREF m_crDisabled = RGB(172, 96, 96);
-	static COLORREF m_crSelected = RGB(244, 234, 234);
-	static COLORREF m_crBorder = RGB(182, 109, 109));
+	const COLORREF m_crText = RGB(70, 36, 36);
+	const COLORREF m_crBackground = RGB(253, 249, 249);
+	const COLORREF m_crDisabled = RGB(172, 96, 96);
+	const COLORREF m_crSelected = RGB(244, 234, 234);
+	const COLORREF m_crBorder = RGB(182, 109, 109));
 };
 
 #endif

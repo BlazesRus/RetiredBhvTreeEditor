@@ -7,7 +7,7 @@
 // DLG_TreeNodeText.h : header file
 //
 
-#include "Resource.h"
+#include "AppResources.h"
 /////////////////////////////////////////////////////////////////////////////
 // TreeNodeText dialog
 
@@ -21,7 +21,7 @@ public:
 
 // Dialog Data
 	//{{AFX_DATA(TreeNodeText)
-	enum { IDD = IDD_NODETEXT };
+    enum { IDD = IDD_NODETEXT };
 	CEdit	m_EF_Text;
 	//}}AFX_DATA
 

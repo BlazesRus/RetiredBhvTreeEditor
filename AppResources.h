@@ -7,6 +7,7 @@
 #define ID_VIEW_PRIMARYVIEW               30771
 #define ID_VIEW_SECONDARYVIEW               30772
 //#define ID_VIEW_SWITCHVIEW              30773
+#define IDD_NODETEXT                    211
 
 // Next default values for new objects
 // 

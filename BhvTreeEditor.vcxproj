@@ -151,6 +151,7 @@
     <ClCompile Include="$(BlazesGlobalCode)\VariableLists\VariableVectorFunctions.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ContextMenu.cpp" />
     <ClCompile Include="TreeNodeText.cpp" />
     <ClCompile Include="TreeView.cpp" />
     <ClInclude Include="$(BlazesGlobalCode)\tsl\ordered_hash.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="$(BlazesGlobalCode)\VariableLists\VariableTypeLists.h" />
     <ClInclude Include="$(BlazesGlobalCode)\VariableLists\VariableVectorFunctions.h" />
     <ClInclude Include="APPDefines.h" />
+    <ClInclude Include="ContextMenu.h" />
     <ClInclude Include="DataDictionary.h" />
     <ClInclude Include="DataNode.h" />
     <ClInclude Include="InfoDataDictionary.h" />
