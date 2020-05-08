@@ -285,7 +285,7 @@ void TreeView::SaveDataToFile(std::string FilePath)
 
 }
 
-inline int TreeView::DrawNodesRecursive(CDC* pDC, DataNode* pNode, int x, int y, CRect rFrame)
+inline int TreeView::DrawRecursiveNodes(CDC* pDC, DataNode* pNode, int x, int y, CRect rFrame)
 {
     int		iDocHeight = 0;		// Total document height
     CRect	rNode;
@@ -392,7 +392,7 @@ inline int TreeView::DrawNodesRecursive(CDC* pDC, DataNode* pNode, int x, int y,
         for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
         {
             targetNode = &this->NodeBank[*targetNodeIndex];
-            iDocHeight = DrawNodesRecursive(pDC, targetNode, x + m_iIndent, y + targetNode->rNode.Height(), rFrame);
+            iDocHeight = DrawRecursiveNodes(pDC, targetNode, x + m_iIndent, y + targetNode->rNode.Height(), rFrame);
         }
     }
 

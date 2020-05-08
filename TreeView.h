@@ -390,22 +390,19 @@ protected:
             m_pTopNode.NodeBank.Add("Tree Data", 1);//Actually Tree data inside here but in other types (Except for data for Events and Variables etc)
     */
 
-        pDC->SetTextColor(crOldText);
+        //pDC->SetTextColor(crOldText);
 
         DataNode* targetNode;
-        for (UIntVector::iterator CurrentVal = RootNodes->begin(), LastVal = RootNodes->end(); CurrentVal != LastVal; ++CurrentVal)
+        for (UIntVector::iterator CurrentVal = RootNodes.begin(), LastVal = RootNodes.end(); CurrentVal != LastVal; ++CurrentVal)
         {
-            if (*CurrentVal == targetVal)
-            {
-                targetNode = pNode->NodeBank[*CurrentVal];
-                iDocHeight = DrawNodesRecursiveToNodes(pDC, pNode, targetNode, x + m_iIndent, y + pNode->CoordData.Height(), rFrame);
-            }
+            targetNode = &NodeBank[*CurrentVal];
+            iDocHeight = DrawRecursiveNodes(pDC, targetNode, x + m_iIndent, y + rNode.Height(), rFrame);
         }
 
         return iDocHeight;// + pNode->rNode.Height();
     }
 
-    int DrawNodesRecursive(CDC* pDC, DataNode* pNode, int x, int y, CRect rFrame);
+    int DrawRecursiveNodes(CDC* pDC, DataNode* pNode, int x, int y, CRect rFrame);
 
     int HowMuchTextFits(CDC* pDC, int iAvailableWidth, CString csText)
     {
@@ -517,6 +514,11 @@ protected:
     {
         DataNode* targetNode = nullptr;
         return targetNode;
+    }
+
+    void AddTagContentNode(unsigned int TargetPIndex)
+    {
+
     }
     // Message handlers
 
