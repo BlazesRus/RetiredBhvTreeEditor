@@ -531,7 +531,7 @@ protected:
         if (message == WM_NCHITTEST || message == WM_NCLBUTTONDOWN || message == WM_NCLBUTTONDBLCLK)
             return ::DefWindowProc(m_hWnd, message, wParam, lParam);
 
-        return CStatic::WindowProc(message, wParam, lParam);
+        return CView::WindowProc(message, wParam, lParam);
     }
     //}}AFX_VIRTUAL
 
@@ -547,7 +547,7 @@ protected:
         if (!m_bScrollBarMessage)
             ResetScrollBar();
 
-        CStatic::OnSize(nType, cx, cy);
+        CView::OnSize(nType, cx, cy);
     }
     afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
     {
@@ -615,7 +615,7 @@ protected:
         }
         else
         {
-            if (point > TreeStart->CoordData.bottom)//Main NodeTree nodes
+            if (point > TreeStart.CoordData.bottom)//Main NodeTree nodes
             {
                 TargetNode = RetrieveNodeByPoint(point);
                 if (TargetNode != nullptr) { NodeTypeFound = 3; }
@@ -626,7 +626,7 @@ protected:
                 if (TargetInfoNode != nullptr) { NodeTypeFound = 2; }
             }
         }
-        if (ToggleNode(point, bInvalidate)) { CStatic::OnLButtonUp(nFlags, point); }
+        if (ToggleNode(point, bInvalidate)) { CView::OnLButtonUp(nFlags, point); }
     }
 
     /// <summary>
@@ -641,7 +641,7 @@ protected:
         // zDelta greater than 0, means rotating away from the user, that is, scrolling up
         OnVScroll((zDelta > 0) ? SB_LINEUP : SB_LINEDOWN, 0, NULL);
 
-        return CStatic::OnMouseWheel(nFlags, zDelta, pt);
+        return CView::OnMouseWheel(nFlags, zDelta, pt);
     }
 
     /// <summary>
@@ -658,25 +658,25 @@ protected:
 
         //1=RootNode;2=InfoNode;3=DataNode
         short NodeTypeFound = 0;
-        RootNode* TargetNode = nullptr;
+        RootNode* targetRootNode = nullptr;
         InfoNode* TargetInfoNode = nullptr;
         DataNode* TargetNode = nullptr;
 
         if (point.x < RootEnd)//Search for RootNode nearest to point
         {
-            RootNode = RetrieveNearestRootNode(point);
-            if (RootNode != nullptr) { NodeTypeFound = 1; }
+            targetRootNode = RetrieveNearestRootNode(point);
+            if (targetRootNode != nullptr) { NodeTypeFound = 1; }
         }
         else
         {
-            if (point > TreeStart->CoordData.bottom)//Main NodeTree nodes
+            if (point > TreeStart.CoordData.bottom)//Main NodeTree nodes
             {
                 TargetNode = RetrieveNodeByPoint(point);
                 if (TargetNode != nullptr) { NodeTypeFound = 3; }
             }
             else
             {
-                TargetInfoNode = RetrieveNodeByPoint(point);
+                TargetInfoNode = RetrieveInfoNodeByPoint(point);
                 if (TargetInfoNode != nullptr) { NodeTypeFound = 2; }
             }
         }
@@ -738,27 +738,32 @@ protected:
                 switch (TargetNode->NodeType)
                 {
                     //Event Link
-                case 92:
-                case 101:
-                case 111:
-                    break;
+                    case 92:
+                    case 101:
+                    case 111:
+                        break;
                     //Variable Link
-                case 93:
-                case 102:
-                case 112:
-                    break;
-                    //Character Property Link
-                case 93:
-                case 103:
-                case 113:
-                    break;
+                    case 93:
+                    case 102:
+                    case 112:
+                        break;
                     //ClassNode Link
-                case 93:
-                case 103:
-                case 113:
-                    break;
-                default:
-                    break;
+                    case 94:
+                    case 103:
+                    case 113:
+                        break;
+                    //Character Property Link
+                    case 95:
+                    case 104:
+                    case 114:
+                        break;
+                    //Attribute Name Link
+                    case 96:
+                    case 105:
+                    case 115:
+                        break;
+                    default:
+                        break;
                 }
                 if (TargetNode->NodeType == 90)
                 {
