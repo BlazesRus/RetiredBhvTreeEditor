@@ -38,3 +38,6 @@
 *.idb
 *.VC.db
 *.VC.opendb
+*.VC.db-shm
+*.VC.db-wal
+*.suo
