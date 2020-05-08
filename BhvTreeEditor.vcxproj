@@ -166,6 +166,11 @@
     <ClInclude Include="$(BlazesGlobalCode)\VariableLists\VariableTypeLists.h" />
     <ClInclude Include="$(BlazesGlobalCode)\VariableLists\VariableVectorFunctions.h" />
     <ClInclude Include="APPDefines.h" />
+    <ClInclude Include="DataDictionary.h" />
+    <ClInclude Include="DataNode.h" />
+    <ClInclude Include="InfoDataDictionary.h" />
+    <ClInclude Include="OrderedIndexDictionary.h" />
+    <ClInclude Include="RootNode.h" />
     <ClInclude Include="TreeNodeText.h" />
     <ClInclude Include="UIntDic.h" />
   </ItemGroup>
