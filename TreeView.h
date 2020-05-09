@@ -95,23 +95,23 @@ protected:
     DataDictionary NodeBank;
     UIntDic NodeLinks;
 
-	/// <summary>
-	/// The node bank holding all event data(names->eventInfos)
-	/// </summary>
-	InfoDataDictionary EventBank;
-	/// <summary>
-	/// The node bank holding all variable data(names->
-	/// </summary>
-	InfoDataDictionary VariableBank;
+    /// <summary>
+    /// The node bank holding all event data(names->eventInfos)
+    /// </summary>
+    InfoDataDictionary EventBank;
+    /// <summary>
+    /// The node bank holding all variable data(names->
+    /// </summary>
+    InfoDataDictionary VariableBank;
 
-	/// <summary>
-	/// Node bank 
-	/// </summary>
-	InfoDataDictionary AttriNameBank;
-	/// <summary>
-	/// Nodes bank holding Character Property info(names->role+flags+type)
-	/// </summary>
-	InfoDataDictionary CharPropBank;
+    /// <summary>
+    /// Node bank 
+    /// </summary>
+    InfoDataDictionary AttriNameBank;
+    /// <summary>
+    /// Nodes bank holding Character Property info(names->role+flags+type)
+    /// </summary>
+    InfoDataDictionary CharPropBank;
 
     //Places all root-nodes at or below X coordinate of RootEnd
     const long RootEnd = 41;
@@ -162,8 +162,7 @@ protected:
     /// Saves the loaded data to file.
     /// </summary>
     /// <param name="FilePath">The file path.</param>
-    /// <returns>bool</returns>
-    bool SaveDataToFile(std::string FilePath);
+    void SaveDataToFile(std::string FilePath);
 
 //--------------------------------------------------------------------------------------
 
@@ -289,25 +288,25 @@ public:
     {
         //1=RootNode;2=InfoNode;3=DataNode
         bool FailedToFindNode = false;
-        RootNode* TargetNode = nullptr;
+        RootNode* TargetRootNode = nullptr;
         InfoNode* TargetInfoNode = nullptr;
         DataNode* TargetNode = nullptr;
 
         if (point.x < RootEnd)//Search for RootNode nearest to point
         {
-            RootNode = RetrieveNearestRootNode(point);
-            if (RootNode != nullptr) { ToggleNode(RootNode, bInvalidate); FailedToFindNode = false; }
+            TargetRootNode = RetrieveNearestRootNode(point);
+            if (TargetRootNode != nullptr) { ToggleNode(TargetRootNode, bInvalidate); FailedToFindNode = false; }
         }
         else
         {
-            if (point > TreeStart->CoordData.bottom)//Main NodeTree nodes
+            if (point.y > TreeStart.CoordData.bottom)//Main NodeTree nodes
             {
                 TargetNode = RetrieveNodeByPoint(point);
                 if (TargetNode != nullptr) { ToggleNode(TargetNode, bInvalidate); FailedToFindNode = false; }
             }
             else
             {
-                TargetInfoNode = RetrieveNodeByPoint(point);
+                TargetInfoNode = RetrieveInfoNodeByPoint(point);
                 if (TargetInfoNode != nullptr) { ToggleNode(TargetInfoNode, bInvalidate); FailedToFindNode = false; }
             }
         }
@@ -377,6 +376,7 @@ protected:
 
     // MULTILINE TEXT - begins
         CString	cs = EventDataStart.NodeName.c_str();
+        InfoNode* targetInfoNode = nullptr;
         int		iPos;
 
         // Height of a line of text(All parts of Node at same height--limiting to single line nodes for now unless need to expand)
@@ -385,13 +385,14 @@ protected:
         // Find out how much text fits in one line
         iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
 
-				pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+        pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
         iDocHeight += EventDataStart.CoordData.Height();
         if(EventDataStart.bOpen)
         {
-            for (UIntVector::iterator CurrentVal = EventBank.begin(), LastVal = EventBank.end(); CurrentVal != LastVal; ++CurrentVal)
+            for (UIntVector::iterator targetNodeIndex = EventBank.RootNodes.begin(), EndIndex = EventBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
-                iDocHeight = DrawRecursiveNodes(pDC, *CurrentVal, RootEnd, y + rNode.Height(), rFrame);
+                targetInfoNode = &this->EventBank[*targetNodeIndex];
+                iDocHeight = DrawRecursiveInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 0);
             }
         }
 
@@ -404,9 +405,10 @@ protected:
         iDocHeight += VariableDataStart.CoordData.Height();
         if(VariableDataStart.bOpen)
         {
-            for (UIntVector::iterator CurrentVal = VariableBank.begin(), LastVal = VariableBank.end(); CurrentVal != LastVal; ++CurrentVal)
+            for (UIntVector::iterator targetNodeIndex = VariableBank.RootNodes.begin(), EndIndex = VariableBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
-                iDocHeight = DrawRecursiveNodes(pDC, *CurrentVal, RootEnd, y + rNode.Height(), rFrame);
+                targetInfoNode = &this->VariableBank[*targetNodeIndex];
+                iDocHeight = DrawRecursiveInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 1);
             }
         }
 
@@ -419,9 +421,10 @@ protected:
         iDocHeight += AttriNameStart.CoordData.Height();
         if(AttriNameStart.bOpen)
         {
-            for (UIntVector::iterator CurrentVal = AttriNameBank.begin(), LastVal = AttriNameBank.end(); CurrentVal != LastVal; ++CurrentVal)
+            for (UIntVector::iterator targetNodeIndex = AttriNameBank.RootNodes.begin(), EndIndex = AttriNameBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
-                iDocHeight = DrawRecursiveNodes(pDC, *CurrentVal, RootEnd, y + rNode.Height(), rFrame);
+                targetInfoNode = &this->AttriNameBank[*targetNodeIndex];
+                iDocHeight = DrawRecursiveInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 2);
             }
         }
 
@@ -434,9 +437,10 @@ protected:
         iDocHeight += CharPropStart.CoordData.Height();
         if(CharPropStart.bOpen)
         {
-            for (UIntVector::iterator CurrentVal = CharPropBank.begin(), LastVal = CharPropBank.end(); CurrentVal != LastVal; ++CurrentVal)
+            for (UIntVector::iterator targetNodeIndex = CharPropBank.RootNodes.begin(), EndIndex = CharPropBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
-                iDocHeight = DrawRecursiveNodes(pDC, *CurrentVal, RootEnd, y + rNode.Height(), rFrame);
+                targetInfoNode = &this->CharPropBank[*targetNodeIndex];
+                iDocHeight = DrawRecursiveInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 3);
             }
         }
 //---------------------------------------------------------------------------------------
@@ -461,8 +465,9 @@ protected:
         return iDocHeight;
     }
 
-    template <typename NodeType>
-    int DrawRecursiveNodes(CDC* pDC, NodeType* pNode, int x, int y, CRect rFrame);
+    int DrawRecursiveInfoNodes(CDC* pDC, InfoNode* pNode, int x, int y, CRect rFrame, short BankType);
+
+    int DrawRecursiveNodes(CDC* pDC, DataNode* pNode, int x, int y, CRect rFrame);
 
     int HowMuchTextFits(CDC* pDC, int iAvailableWidth, CString csText)
     {
@@ -664,14 +669,14 @@ protected:
     {
         //1=RootNode;2=InfoNode;3=DataNode
         short NodeTypeFound = 0;
-        RootNode* TargetNode = nullptr;
+        RootNode* TargetRootNode = nullptr;
         InfoNode* TargetInfoNode = nullptr;
         DataNode* TargetNode = nullptr;
 
         if (point.x < RootEnd)//Search for RootNode nearest to point
         {
-            RootNode = RetrieveNearestRootNode(point);
-            if (RootNode != nullptr) { NodeTypeFound = 1; }
+            TargetRootNode = RetrieveNearestRootNode(point);
+            if (TargetRootNode != nullptr) { NodeTypeFound = 1; }
         }
         else
         {
@@ -759,7 +764,7 @@ protected:
             switch (NodeTypeFound)
             {
             case 1:
-                cs = TargetInfoNode->NodeName.c_str();
+                cs = targetRootNode->NodeName.c_str();
                 cs = cs.Left(45) + ((TargetNode->TagName.size() > 45) ? _T("...") : _T(""));
                 break;
             case 2:

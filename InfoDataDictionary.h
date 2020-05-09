@@ -50,4 +50,21 @@ public:
 	~InfoNode(){}
 };
 
-class InfoDataDictionary : public OrderedIndexDictionary<InfoNode>{};
+class InfoDataDictionary : public OrderedIndexDictionary<InfoNode>
+{
+public:
+	UIntVector RootNodes;
+	InfoDataDictionary()
+	{
+
+	}
+	void Reset()
+	{
+		this->clear();
+		RootNodes.clear();
+	}
+	~InfoDataDictionary()
+	{
+
+	}
+};

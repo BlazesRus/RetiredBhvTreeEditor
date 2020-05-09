@@ -285,6 +285,80 @@ void TreeView::SaveDataToFile(std::string FilePath)
 
 }
 
+//BankTypes 0=Event; 1=Variable
+inline int TreeView::DrawRecursiveInfoNodes(CDC* pDC, InfoNode* pNode, int x, int y, CRect rFrame, short BankType)
+{
+    int		iDocHeight = 0;		// Total document height
+    CRect	rNode;
+
+    // The node's location and dimensions on screen
+    rNode.left = x;
+    rNode.top = y;
+    rNode.right = rFrame.right - m_iPadding;
+    rNode.bottom = y + m_iLineHeight;
+
+    //pNode->CoordData.CopyRect(rNode);		// Record the rectangle
+
+    COLORREF crOldText = pDC->SetTextColor(m_crDefaultTextColor);
+
+    // MULTILINE TEXT - begins
+    CString	cs = pNode->TagName.c_str();
+    int		iPos;
+    int ArgSize;
+
+    // Height of a line of text(All parts of Node at same height--limiting to single line nodes for now unless need to expand)
+    rNode.bottom = rNode.top + m_iLineHeight;
+
+    //------------------Draw primary NodeButton-------------------------------------------------
+    // Find out how much text fits in one line
+    iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
+    pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+
+    pDC->SetTextColor(crOldText);
+    if (pNode->ChildNodes.empty())
+    {
+        return pNode->CoordData.Height();
+    }
+    else if (pNode->bOpen)// If the node is open AND it has children, then draw those
+    {
+        InfoNode* targetNode = nullptr;
+        switch(BankType)
+        {
+        default:
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->EventBank[*targetNodeIndex];
+                iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->rNode.Height(), rFrame, 0);
+            }
+            break;
+        case 1:
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->VariableBank[*targetNodeIndex];
+                iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->rNode.Height(), rFrame, 1);
+            }
+            break;
+        case 2:
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->AttriNameBank[*targetNodeIndex];
+                iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->rNode.Height(), rFrame, 2);
+            }
+            break;
+        case 3:
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->CharPropBank[*targetNodeIndex];
+                iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->rNode.Height(), rFrame, 3);
+            }
+            break;
+        }
+
+    }
+
+    return iDocHeight + pNode->CoordData.Height();
+}
+
 inline int TreeView::DrawRecursiveNodes(CDC* pDC, DataNode* pNode, int x, int y, CRect rFrame)
 {
     int		iDocHeight = 0;		// Total document height
