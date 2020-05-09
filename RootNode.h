@@ -10,6 +10,8 @@
 /// </summary>
 class RootNode
 {public:
+	std::string NodeName;
+
 	/// <summary>
 	/// The b open
 	/// </summary>
@@ -26,10 +28,9 @@ public:
 	/// <param name="name">The NodeName.</param>
 	RootNode(std::string name)
 	{
-		TagName = name;
-		//rNode.SetRectEmpty();
-		bOpen = TRUE;
-		NodeType = 0;
+		NodeName = name;
+		CoordData.SetRectEmpty();
+		bOpen = FALSE;
 	}
 	
 	/// <summary>

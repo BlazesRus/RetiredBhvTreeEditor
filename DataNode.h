@@ -70,8 +70,9 @@ public:
 	{
 		TagName = name;
 		CoordData.SetRectEmpty();
-		bOpen = TRUE;
+		bOpen = FALSE;
 		NodeType = 0;
+		ParentIndex = 0;
 	}
 	
 	/// <summary>

@@ -114,11 +114,19 @@ protected:
 	InfoDataDictionary CharPropBank;
 
     //Places all root-nodes at or below X coordinate of RootEnd
-    long RootEnd;
-    RootNode TreeStart;
-    RootNode EventDataStart;
-    RootNode VariableDataStart;
-    unsigned int ClassNodeStart;
+    const long RootEnd = 41;
+    RootNode TreeStart = "Tree Data";
+    RootNode EventDataStart = "Event Data";
+    RootNode VariableDataStart = "Variable Data";
+    RootNode AttriNameStart = "Attribute Names";
+    RootNode CharPropStart = "Character Properties";
+
+/*
+    NodeBank.Add("Linked Conditional Tree", 1);//Condition Classes linked together to other nodes in more descriptive way
+    NodeBank.Add("Usage Linked Tree", 1);//Classes Linked together based on calls to other nodes
+*/
+    //Index of Node that ClassNodes are within
+    unsigned int ClassNodeStart = 0;
     short NodeSearchRange = 0;
 
     //Holds data of Name from hkbBehaviorGraphStringData(Event & Variable Names)
@@ -365,44 +373,96 @@ protected:
         rNode.right = rFrame.right - m_iPadding;
         rNode.bottom = y + m_iLineHeight;
 
-        //pNode->rNode.CopyRect(rNode);		// Record the rectangle
+        EventDataStart.CoordData.CopyRect(rNode);		// Record the rectangle
 
     // MULTILINE TEXT - begins
-    //CString	cs = pNode->TagName.c_str();
+        CString	cs = EventDataStart.NodeName.c_str();
         int		iPos;
-        int ArgSize;
 
         // Height of a line of text(All parts of Node at same height--limiting to single line nodes for now unless need to expand)
         rNode.bottom = rNode.top + m_iLineHeight;
 
         // Find out how much text fits in one line
-        //iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
+        iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
 
-    /*		//Add in SubTrees
-            m_pTopNode.NodeBank.Add("Event Data", 1);
-            //Keys ==EventNames; SubKeys for Events:
-            m_pTopNode.NodeBank.Add("Variable Data", 1);//For Displaying and editing Variable Data
-            m_pTopNode.NodeBank.Add("Character Property Data", 1);
-            m_pTopNode.NodeBank.Add("Attribute Name Data", 1);
-            //Keys ==VariableNames; SubKeys for Variables:Value,Role
-            m_pTopNode.NodeBank.Add("Linked Conditional Tree", 1);//Condition Classes linked together to other nodes in more descriptive way
-            m_pTopNode.NodeBank.Add("Usage Linked Tree", 1);//Classes Linked together based on calls to other nodes
-            m_pTopNode.NodeBank.Add("Tree Data", 1);//Actually Tree data inside here but in other types (Except for data for Events and Variables etc)
-    */
-
-        //pDC->SetTextColor(crOldText);
-
-        DataNode* targetNode;
-        for (UIntVector::iterator CurrentVal = RootNodes.begin(), LastVal = RootNodes.end(); CurrentVal != LastVal; ++CurrentVal)
+				pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+        iDocHeight += EventDataStart.CoordData.Height();
+        if(EventDataStart.bOpen)
         {
-            targetNode = &NodeBank[*CurrentVal];
-            iDocHeight = DrawRecursiveNodes(pDC, targetNode, x + m_iIndent, y + rNode.Height(), rFrame);
+            for (UIntVector::iterator CurrentVal = EventBank.begin(), LastVal = EventBank.end(); CurrentVal != LastVal; ++CurrentVal)
+            {
+                iDocHeight = DrawRecursiveNodes(pDC, *CurrentVal, RootEnd, y + rNode.Height(), rFrame);
+            }
         }
 
-        return iDocHeight;// + pNode->rNode.Height();
+        cs = VariableDataStart.NodeName.c_str();
+        rNode.top += rNode.Height();
+        rNode.bottom += rNode.Height() + m_iLineHeight;
+        VariableDataStart.CoordData.CopyRect(rNode);
+        iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
+        pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+        iDocHeight += VariableDataStart.CoordData.Height();
+        if(VariableDataStart.bOpen)
+        {
+            for (UIntVector::iterator CurrentVal = VariableBank.begin(), LastVal = VariableBank.end(); CurrentVal != LastVal; ++CurrentVal)
+            {
+                iDocHeight = DrawRecursiveNodes(pDC, *CurrentVal, RootEnd, y + rNode.Height(), rFrame);
+            }
+        }
+
+        cs = AttriNameStart.NodeName.c_str();
+        rNode.top += rNode.Height();
+        rNode.bottom += rNode.Height() + m_iLineHeight;
+        AttriNameStart.CoordData.CopyRect(rNode);
+        iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
+        pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+        iDocHeight += AttriNameStart.CoordData.Height();
+        if(AttriNameStart.bOpen)
+        {
+            for (UIntVector::iterator CurrentVal = AttriNameBank.begin(), LastVal = AttriNameBank.end(); CurrentVal != LastVal; ++CurrentVal)
+            {
+                iDocHeight = DrawRecursiveNodes(pDC, *CurrentVal, RootEnd, y + rNode.Height(), rFrame);
+            }
+        }
+
+        cs = CharPropStart.NodeName.c_str();
+        rNode.top += rNode.Height();
+        rNode.bottom += rNode.Height() + m_iLineHeight;
+        CharPropStart.CoordData.CopyRect(rNode);
+        iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
+        pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+        iDocHeight += CharPropStart.CoordData.Height();
+        if(CharPropStart.bOpen)
+        {
+            for (UIntVector::iterator CurrentVal = CharPropBank.begin(), LastVal = CharPropBank.end(); CurrentVal != LastVal; ++CurrentVal)
+            {
+                iDocHeight = DrawRecursiveNodes(pDC, *CurrentVal, RootEnd, y + rNode.Height(), rFrame);
+            }
+        }
+//---------------------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------------------
+        rNode.top += rNode.Height();
+        rNode.bottom += rNode.Height() + m_iLineHeight;
+        TreeStart.CoordData.CopyRect(rNode);
+        iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
+        pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+        iDocHeight += TreeStart.CoordData.Height();
+        if(TreeStart.bOpen)
+        {
+            DataNode* targetNode;
+            for (UIntVector::iterator CurrentVal = RootNodes.begin(), LastVal = RootNodes.end(); CurrentVal != LastVal; ++CurrentVal)
+            {
+                targetNode = &NodeBank[*CurrentVal];
+                iDocHeight = DrawRecursiveNodes(pDC, targetNode, RootEnd, y + rNode.Height(), rFrame);
+            }
+        }
+
+        return iDocHeight;
     }
 
-    int DrawRecursiveNodes(CDC* pDC, DataNode* pNode, int x, int y, CRect rFrame);
+    template <typename NodeType>
+    int DrawRecursiveNodes(CDC* pDC, NodeType* pNode, int x, int y, CRect rFrame);
 
     int HowMuchTextFits(CDC* pDC, int iAvailableWidth, CString csText)
     {
@@ -699,7 +759,8 @@ protected:
             switch (NodeTypeFound)
             {
             case 1:
-                cs = cs.Left(45) + _T("...");
+                cs = TargetInfoNode->NodeName.c_str();
+                cs = cs.Left(45) + ((TargetNode->TagName.size() > 45) ? _T("...") : _T(""));
                 break;
             case 2:
                 cs = TargetInfoNode->TagName.c_str();
