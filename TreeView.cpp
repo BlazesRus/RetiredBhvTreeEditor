@@ -328,28 +328,28 @@ inline int TreeView::DrawRecursiveInfoNodes(CDC* pDC, InfoNode* pNode, int x, in
             for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetNode = &this->EventBank[*targetNodeIndex];
-                iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->rNode.Height(), rFrame, 0);
+                iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 0);
             }
             break;
         case 1:
             for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetNode = &this->VariableBank[*targetNodeIndex];
-                iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->rNode.Height(), rFrame, 1);
+                iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 1);
             }
             break;
         case 2:
             for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetNode = &this->AttriNameBank[*targetNodeIndex];
-                iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->rNode.Height(), rFrame, 2);
+                iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 2);
             }
             break;
         case 3:
             for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetNode = &this->CharPropBank[*targetNodeIndex];
-                iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->rNode.Height(), rFrame, 3);
+                iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 3);
             }
             break;
         }
@@ -466,7 +466,7 @@ inline int TreeView::DrawRecursiveNodes(CDC* pDC, DataNode* pNode, int x, int y,
         for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
         {
             targetNode = &this->NodeBank[*targetNodeIndex];
-            iDocHeight = DrawRecursiveNodes(pDC, targetNode, x + m_iIndent, y + targetNode->rNode.Height(), rFrame);
+            iDocHeight = DrawRecursiveNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame);
         }
     }
 
@@ -493,9 +493,9 @@ inline void TreeView::DrawLinesRecursive(CDC* pDC, DataNode* pNode)
     // If the parent is not the root, throw a connecting line to it
     if (TargetIndex != 0)
     {
-        targetNode = this->NodeBank[TargetIndex];
+        targetNode = &this->NodeBank[TargetIndex];
         // How far up from the joint is the parent?
-        int iDispY = iJointY - targetNode->rNode.top - (m_iLineHeight / 2);
+        int iDispY = iJointY - targetNode->CoordData.top - (m_iLineHeight / 2);
 
         // Use 1 pixel wide rectangles to draw lines
         pDC->FillSolidRect(iJointX, iJointY, m_iIndent, 1, m_crConnectingLines);	// Horizontal line

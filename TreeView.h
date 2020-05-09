@@ -333,8 +333,44 @@ protected:
         DataNode* targetNode;
         for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
         {
-            targetNode = this->NodeBank[targetNodeIndex];
+            targetNode = &this->NodeBank[*targetNodeIndex];
             AddAllSubNodes(targetNode, TargetNodes);
+        }
+    }
+
+    void AddAllSubNodes(InfoNode* pNode, UIntVector& TargetNodes, short BankType)
+    {
+        InfoNode* targetNode;
+        switch (BankType)
+        {
+        default:
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->EventBank[*targetNodeIndex];
+                AddAllSubNodes(targetNode, TargetNodes, 0);
+            }
+            break;
+        case 1:
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->VariableBank[*targetNodeIndex];
+                AddAllSubNodes(targetNode, TargetNodes, 1);
+            }
+            break;
+        case 2:
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->AttriNameBank[*targetNodeIndex];
+                AddAllSubNodes(targetNode, TargetNodes, 2);
+            }
+            break;
+        case 3:
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->CharPropBank[*targetNodeIndex];
+                AddAllSubNodes(targetNode, TargetNodes, 3);
+            }
+            break;
         }
     }
 
@@ -356,6 +392,90 @@ protected:
         for (UIntVector::iterator targetNodeIndex = TargetNodes.begin(), EndIndex = TargetNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
         {
             NodeBank.Remove(*targetNodeIndex);
+        }
+        if (bInvalidate)
+            Invalidate();
+    }
+
+    void DeleteInfoNode(unsigned int nodeIndex, short BankType, BOOL bInvalidate = FALSE)
+    {
+        UIntVector TargetNodes;
+        TargetNodes.push_back(nodeIndex);
+        InfoNode* pNode = nullptr;
+        switch(BankType)
+        {
+        default:
+            pNode = &EventBank[nodeIndex];break;
+        case 1:
+            pNode = &VariableBank[nodeIndex];break;
+        case 2:
+            pNode = &AttriNameBank[nodeIndex]; break;
+        case 3:
+            pNode = &CharPropBank[nodeIndex]; break;
+        }
+        InfoNode* targetNode;
+        switch (BankType)
+        {
+        default:
+            if (pNode->ParentIndex == 0)
+            {
+                EventBank.RootNodes.DeleteFirstMatch(nodeIndex);
+            }
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->EventBank[*targetNodeIndex];
+                AddAllSubNodes(targetNode, TargetNodes, 0);
+            }
+            for (UIntVector::iterator targetNodeIndex = TargetNodes.begin(), EndIndex = TargetNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                EventBank.Remove(*targetNodeIndex);
+            }
+            break;
+        case 1:
+            if (pNode->ParentIndex == 0)
+            {
+                VariableBank.RootNodes.DeleteFirstMatch(nodeIndex);
+            }
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->VariableBank[*targetNodeIndex];
+                AddAllSubNodes(targetNode, TargetNodes, 0);
+            }
+            for (UIntVector::iterator targetNodeIndex = TargetNodes.begin(), EndIndex = TargetNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                VariableBank.Remove(*targetNodeIndex);
+            }
+            break;
+        case 2:
+            if (pNode->ParentIndex == 0)
+            {
+                AttriNameBank.RootNodes.DeleteFirstMatch(nodeIndex);
+            }
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->AttriNameBank[*targetNodeIndex];
+                AddAllSubNodes(targetNode, TargetNodes, 0);
+            }
+            for (UIntVector::iterator targetNodeIndex = TargetNodes.begin(), EndIndex = TargetNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                AttriNameBank.Remove(*targetNodeIndex);
+            }
+            break;
+        case 3:
+            if (pNode->ParentIndex == 0)
+            {
+                CharPropBank.RootNodes.DeleteFirstMatch(nodeIndex);
+            }
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->CharPropBank[*targetNodeIndex];
+                AddAllSubNodes(targetNode, TargetNodes, 0);
+            }
+            for (UIntVector::iterator targetNodeIndex = TargetNodes.begin(), EndIndex = TargetNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                CharPropBank.Remove(*targetNodeIndex);
+            }
+            break;
         }
         if (bInvalidate)
             Invalidate();
@@ -550,7 +670,12 @@ protected:
         return bRet;
     }
 
-    void AddNode(std::string TagName, unsigned int parentIndex = 0, ArgList args)
+    void AddNode(std::string TagName)
+    {
+        AddNode(TagName, 0, ArgList());
+    }
+
+    void AddNode(std::string TagName, unsigned int parentIndex, ArgList args)
     {
     }
 
