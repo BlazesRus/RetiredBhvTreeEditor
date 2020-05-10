@@ -1,6 +1,7 @@
 #include "StdBhvTree.h"
 #include "TreeView.h"
 #include "VariableLists/StringVectorList.h"
+#include "TagDepthTree.h"
 
 IMPLEMENT_DYNCREATE(TreeView, CView)
 
@@ -94,7 +95,7 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
     //Used for storing size or current state of code loading
     //Stage 999 = Potential entry point of hkobject tag(Not inside HKclassobject yet)
     size_t StageOrSize = 0;
-    size_t DepthLevel = 0;
+    TagDepthTree TagDepth;
 
     //bool InsideActionClass;
     std::string CurrentNodeName = "";
@@ -104,7 +105,7 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
     std::string SingTemp = "";
     //BhvTreeViewNode* TargetNode = nullptr;
 
-    ifstream inFile;
+    std::ifstream inFile;
     inFile.open(FilePath);
     if (!inFile)
     {
@@ -211,8 +212,8 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
                 {
                     if(CurrentTag=="hkobject")
                     {
-                        NodeBank.Add(CurrentNodeName, HkClassType, SingTemp);
-                        DepthLevel = 0;//Exit once closing hkobject tag while DepthLevel = 0
+                        this->AddLinkedClassNode(CurrentNodeName, HkClassType, SingTemp);
+                        //DepthLevel = 0;//Exit once closing hkobject tag while DepthLevel = 0
                         InsideTag = false;
                     }
                 }

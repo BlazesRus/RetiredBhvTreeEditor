@@ -229,7 +229,7 @@ public:
     /// <summary>
     /// Sets the default color of the text.
     /// </summary>
-    /// <param name="crText">The cr text.</param>
+    /// <param name="crText">The text color to set to.</param>
     virtual void SetDefaultTextColor(COLORREF crText)
     {
         m_crDefaultTextColor = crText;
@@ -670,13 +670,31 @@ protected:
         return bRet;
     }
 
-    void AddNode(std::string TagName)
+    int AddNode(std::string TagName, unsigned int parentIndex=0)
     {
-        AddNode(TagName, 0, ArgList());
+        DataNode newNode = TagName;
+        int nodeIndex = NodeBank.Add(newNode);
+        if (parentIndex != 0) { NodeBank[nodeIndex].ParentIndex = parentIndex; }
+        return nodeIndex;
     }
 
-    void AddNode(std::string TagName, unsigned int parentIndex, ArgList args)
+    //Returns index of added node on Tree
+    int AddNode(std::string TagName, unsigned int parentIndex, ArgList args)
     {
+        DataNode newNode = TagName;
+        int nodeIndex = NodeBank.Add(newNode);
+        if (parentIndex != 0) { NodeBank[nodeIndex].ParentIndex = parentIndex; }
+        NodeBank[nodeIndex].ArgData = args;
+        return nodeIndex;
+    }
+
+    int AddLinkedClassNode(std::string className, std::string classType, std::string signature)
+    {
+        ArgList NodeArgs;
+        NodeArgs.Add("Type", classType);
+        int nodeIndex = this->AddNode(className, ClassNodeStart, NodeArgs);
+        this->NodeLinks.Add(className, nodeIndex);
+        return nodeIndex;
     }
 
     RootNode* RetrieveNearestRootNode(CPoint point)
@@ -805,18 +823,18 @@ protected:
         }
         else
         {
-            if (point > TreeStart.CoordData.bottom)//Main NodeTree nodes
+            if (point.y > TreeStart.CoordData.bottom)//Main NodeTree nodes
             {
                 TargetNode = RetrieveNodeByPoint(point);
                 if (TargetNode != nullptr) { NodeTypeFound = 3; }
             }
             else
             {
-                TargetInfoNode = RetrieveNodeByPoint(point);
+                TargetInfoNode = RetrieveInfoNodeByPoint(point);
                 if (TargetInfoNode != nullptr) { NodeTypeFound = 2; }
             }
         }
-        if (ToggleNode(point, bInvalidate)) { CView::OnLButtonUp(nFlags, point); }
+        if (ToggleNode(point, true)) { CView::OnLButtonUp(nFlags, point); }
     }
 
     /// <summary>
@@ -859,7 +877,7 @@ protected:
         }
         else
         {
-            if (point > TreeStart.CoordData.bottom)//Main NodeTree nodes
+            if (point.y > TreeStart.CoordData.bottom)//Main NodeTree nodes
             {
                 TargetNode = RetrieveNodeByPoint(point);
                 if (TargetNode != nullptr) { NodeTypeFound = 3; }
