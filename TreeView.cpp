@@ -91,10 +91,15 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
     
     //bool TagNameHasArg02 = false;
     //std::string TagNameArg02 = "";
+    std::string ArgElement;
+    ArgStringList LastArg;
+    ArgList ArgBuffer;
     
     //Used for storing size or current state of code loading
     //Stage 999 = Potential entry point of hkobject tag(Not inside HKclassobject yet)
-    size_t StageOrSize = 0;
+    size_t Stage = 0;
+
+    int CurrentClassNodeIndex = 0;
     TagDepthTree TagDepth;
 
     //bool InsideActionClass;
@@ -130,15 +135,15 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
         }
         else if (InsideXMLComment)//Ignoring all xml inside xml formatted comment
         {
-            StageOrSize = ScanBuffer.size();
-            if (StageOrSize == 0)
+            Stage = ScanBuffer.size();
+            if (Stage == 0)
             {
                 if (LineChar == '-')
                 {
                     ScanBuffer = "-";
                 }
             }
-            else if (StageOrSize == 1)
+            else if (Stage == 1)
             {
                 if (LineChar == '-')
                 {
@@ -158,53 +163,51 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
                 ScanBuffer = "";
             }
         }
-/*		else if (ScanningArgData)
+		else if (ScanningArgData)
         {
-            if (StageOrSize == 0)
+            if (Stage == 0)
             {
                 if (LineChar != '=')
                 {
-                    StageOrSize = 1; TagNameArg02 = "";
+                    Stage = 1; //TagNameArg02 = "";
+                    LastArg.SetArgName(ScanBuffer);
+                    LastArg.Reset();
                 }
                 else if (LineChar != ' ' && LineChar != '\t' && LineChar != '\n')//Skip Whitespace
                 {
                     ScanBuffer += LineChar;
                 }
             }
-            else
+            else if(Stage==1)
             {
                 if (LineChar == '\"')
                 {
-                    if (InsideParenthesis && !TagNameArg02.empty())//End argument inside parenthesis with second parenthesis instead of space
-                    {
-                        ////Detect Argument type(0=Default/String; 1:Int; 2:Non-WholeNumber)
-                        //int DetectedArgType = 0;
-                        //for(int Index=0;Index<TagNameArg02.length();++Index)
-                        //{
+                    Stage = 2;
+                }
+            }
+            else if(Stage==2)
+            {
+                //switch(this->NodeBank[CurrentClassNodeIndex].NodeType)
+                //{
+                //default:
+                //    break;
+                //}
+                if (LineChar == ',')
+                {
+                    LastArg.Add(ArgElement);
+                }
+                else if (LineChar == '\"')
+                {
 
-                        //}
-                        //switch(DetectedArgType)
-                        //{
-                        //	case 2:
-                        //		additionTagOptions.Add(ScanBuffer, TagNameArg02);
-                        //	break;
-                        //	default:
-                        additionTagOptions.Add(ScanBuffer, TagNameArg02);
-                        //	break;
-                        //}
-                    }
-                    InsideParenthesis = !InsideParenthesis;
+                    ScanningArgData = false;
                 }
                 else
                 {
-                    if (InsideParenthesis)
-                    {
-                        TagNameArg02 += LineChar;
-                    }
+                    ArgElement += LineChar;
                 }
             }
-        }*/
-        else if(CurrentNodeName==""||StageOrSize==999)//Not inside HKclassobject yet
+        }
+        else if(CurrentNodeName==""||Stage==999)//Not inside HKclassobject yet
         {
             if (InsideTag)
             {
@@ -212,7 +215,7 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
                 {
                     if(CurrentTag=="hkobject")
                     {
-                        this->AddLinkedClassNode(CurrentNodeName, HkClassType, SingTemp);
+                        CurrentClassNodeIndex = this->AddLinkedClassNode(CurrentNodeName, HkClassType, SingTemp);
                         //DepthLevel = 0;//Exit once closing hkobject tag while DepthLevel = 0
                         InsideTag = false;
                     }
@@ -249,7 +252,7 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
                 if (LineChar == '<')//Don't worry about tagcontent yet
                 {
                     InsideTag = true;
-                    StageOrSize = 999;//
+                    Stage = 999;//
                 }
             }
         }/*

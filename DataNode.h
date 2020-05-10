@@ -28,6 +28,8 @@ class DataNode
 	
 	ArgList ArgData;
     //0 = Default
+	//1 = ClassNode root
+	//2 = NonClassNode Level tag
 	//-------Arg Data Stored as Separate nodes-------------------
 	//-------90 = Arg Field
 	//91 = Arg Element

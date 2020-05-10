@@ -691,7 +691,9 @@ protected:
     int AddLinkedClassNode(std::string className, std::string classType, std::string signature)
     {
         ArgList NodeArgs;
+        NodeArgs.Add("Name", className);
         NodeArgs.Add("Type", classType);
+        NodeArgs.Add("Signature", signature);
         int nodeIndex = this->AddNode(className, ClassNodeStart, NodeArgs);
         this->NodeLinks.Add(className, nodeIndex);
         return nodeIndex;
