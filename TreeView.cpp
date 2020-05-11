@@ -89,8 +89,6 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
     bool ScanningArgData = false;
     bool InsideClassNodeSection = false;
     
-    //bool TagNameHasArg02 = false;
-    //std::string TagNameArg02 = "";
     std::string ArgElement;
     ArgStringList LastArg;
     ArgList ArgBuffer;
@@ -169,9 +167,9 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
             {
                 if (LineChar != '=')
                 {
-                    Stage = 1; //TagNameArg02 = "";
-                    LastArg.SetArgName(ScanBuffer);
-                    LastArg.Reset();
+                    Stage = 1;
+                    //CurrentArgName = ScanBuffer;//Don't need to store in separate variable since ScanBuffer not going to be changed until exit scanning argument data
+                    ArgElement = "";
                 }
                 else if (LineChar != ' ' && LineChar != '\t' && LineChar != '\n')//Skip Whitespace
                 {
@@ -187,18 +185,13 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
             }
             else if(Stage==2)
             {
-                //switch(this->NodeBank[CurrentClassNodeIndex].NodeType)
-                //{
-                //default:
-                //    break;
-                //}
                 if (LineChar == ',')
                 {
-                    LastArg.Add(ArgElement);
+                    LastArg.push_back(ArgElement);
                 }
                 else if (LineChar == '\"')
                 {
-
+                    ArgBuffer.Add(ScanBuffer, LastArg);
                     ScanningArgData = false;
                 }
                 else

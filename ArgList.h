@@ -9,16 +9,6 @@
 //Ordered map from https://github.com/Tessil/ordered-map
 #include "tsl\ordered_map.h"
 
-//class ArgElement
-//{
-//public:
-//	ArgStringList Value;
-//    ArgElement(std::string value)
-//	{
-//		Value = value;
-//	}
-//}
-
 /// <summary>
 /// Class named ArgList.
 /// Implements the <see cref="tsl::ordered_map{std::string, ValueType}" />
