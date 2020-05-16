@@ -7,6 +7,7 @@
 
 #include "tsl\ordered_map.h"//Ordered map from https://github.com/Tessil/ordered-map
 #include "DataNode.h"
+#include "ArgList.h"
 
 /// <summary>
 /// Class named DataDictionary.
@@ -55,6 +56,20 @@ public:
 		}
     }
     /// <summary>
+    /// Adds the specified current tag.
+    /// </summary>
+    /// <param name="CurrentTag">The current tag.</param>
+    /// <param name="ArgBuffer">The argument buffer.</param>
+    /// <param name="ParentNodeIndex">Index of the parent node.</param>
+    /// <returns>unsigned int</returns>
+    unsigned int Add(std::string CurrentTag, ArgList ArgBuffer, unsigned int ParentNodeIndex)
+    {
+        DataNode NewNode = CurrentTag;
+        NewNode.ArgData = ArgBuffer;
+        NewNode.ParentIndex = ParentNodeIndex;
+        return Add(NewNode);
+    }
+    /// <summary>
     /// Removes the specified key.
     /// </summary>
     /// <param name="Key">The key.</param>
@@ -70,6 +85,19 @@ public:
     {
         NextIndex = 0;//Free up all index slots usage as well
 		RemovedIndexes.clear();
+    }
+    /// <summary>
+    /// Determines whether the specified target index has key.
+    /// </summary>
+    /// <param name="TargetIndex">Index of the target.</param>
+    /// <returns>bool</returns>
+    bool HasKey(unsigned int TargetIndex)
+    {
+        DataDictionary::iterator it;
+        it = this->find(TargetIndex);
+        if (it != this->end())
+            return true;
+        return false;
     }
     /// <summary>
     /// Initializes a new instance of the <see cref="DataDictionary"/> class.

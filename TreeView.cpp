@@ -73,40 +73,43 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
     bool InsideTag = false;
     std::string ScanBuffer = "";
     
-    //std::string ContentBuffer = "";
-    
     //First name inside tag becomes CurrentTag
     std::string CurrentTag = "";
-    //int CurrentTagIndex = -1;//Default to empty node
-    std::string ArgName = "";
-    std::string ArgValue = "";
-
+    std::string CurrentNodeName = "";
+	unsigned int CurrentNodeIndex = 0;
      //0=NormalTag; 1:SelfContainedTag; 2:TagIsClosing; 3:XMLVersionTag
     int TagType = 0;
-    //bool ArgHasNoValue = false;
-    bool PotentialComment = false;
-    bool InsideParenthesis = false;
-    bool ScanningArgData = false;
-    bool InsideClassNodeSection = false;
-    
-    std::string ArgElement;
+	
+	bool ScanningArgData = false;
+	std::string ArgElement;
     ArgStringList LastArg;
     ArgList ArgBuffer;
-    
-    //Used for storing size or current state of code loading
-    //Stage 999 = Potential entry point of hkobject tag(Not inside HKclassobject yet)
+
+    bool PotentialComment = false;
+    bool InsideParenthesis = false;
+    bool InsideClassNodeSection = false;
+	//0 = Not Scanning TagContent Yet: 1 = Potential SingleLine TagContent: 2 Multi-line target content
+	short TagContentStage = 0;
+
+    //Current state of code loading for certain sections of code
     size_t Stage = 0;
 
-    int CurrentClassNodeIndex = 0;
+	//Index of hkobject class node
+    unsigned int CurrentClassNodeIndex = 0;
+	//Index of last entered node
+    unsigned int CurrentNodeIndex = 0;
     TagDepthTree TagDepth;
+	std::string HkClassType = "";
 
-    //bool InsideActionClass;
-    std::string CurrentNodeName = "";
+    //std::string CurrentNodeName = "";
+	
+	
+	unsigned ClassNodeIndex = 0;
     //class parameter of hkobject
-    std::string HkClassType = "";
-    //Signature parameter of hkobject
-    std::string SingTemp = "";
+
     //BhvTreeViewNode* TargetNode = nullptr;
+    const std::string hkobject = "hkobject";
+    const std::string Signature = "Signature";
 
     std::ifstream inFile;
     inFile.open(FilePath);
@@ -165,7 +168,7 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
         {
             if (Stage == 0)
             {
-                if (LineChar != '=')
+                if (LineChar == '=')
                 {
                     Stage = 1;
                     //CurrentArgName = ScanBuffer;//Don't need to store in separate variable since ScanBuffer not going to be changed until exit scanning argument data
@@ -183,7 +186,11 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
                     Stage = 2;
                 }
             }
-            else if(Stage==2)
+			else if(Stage==2)
+			{
+				if(LineChar=='\"'){	Stage = 3; }
+			}
+            else if(Stage==3)
             {
                 if (LineChar == ',')
                 {
@@ -200,79 +207,90 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
                 }
             }
         }
-        else if(CurrentNodeName==""||Stage==999)//Not inside HKclassobject yet
-        {
+		else
+		{
             if (InsideTag)
             {
-                if (LineChar == '>')
+				if(ScanBuffer=="/"&&LineChar=='>')
+				{
+				    switch(TagType)
+					{
+					default://TagIsClosing(TagType==2)
+						//Decrease TagDepth
+						break;
+					case 1://SelfContainedTag
+                        break;
+					case 3://XMLVersionTag(Same as SelfContained Tag except for ? in front and such)
+						break;
+					case 2://TagIsClosing
+						//if(CurrentTag=="hkobject")//Potentially exiting Linked Class Object
+						//{
+						//}
+						break;
+					}
+					CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
+					InsideTag = false;TagContentStage = 0;
+				}
+                else if (LineChar =='>')
                 {
-                    if(CurrentTag=="hkobject")
-                    {
-                        CurrentClassNodeIndex = this->AddLinkedClassNode(CurrentNodeName, HkClassType, SingTemp);
-                        //DepthLevel = 0;//Exit once closing hkobject tag while DepthLevel = 0
-                        InsideTag = false;
-                    }
+				    //(TagType==0)
+					CurrentNodeIndex = NodeBank.Add(CurrentTag, ArgBuffer, CurrentNodeIndex);//Index of Last Entered Node is it's parent
+					if(InsideClassNodeSection&&CurrentClassNodeIndex==0&&CurrentTag==hkobject&&ArgBuffer.HasKey(Signature))
+					{
+						CurrentClassNodeIndex = CurrentNodeIndex;
+                        CurrentNodeName = ArgBuffer["Name"][0];
+						NodeLinks.Add(CurrentNodeName,  CurrentClassNodeIndex);
+					}
+					//Increase TagDepth
+					CurrentNodeName = CurrentTag;
+					CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
+					InsideTag = false;TagContentStage = 0;
+					
                 }
-                else if(!ScanBuffer.empty())
+                else if(CurrentTag.empty())
                 {
-                    if(LineChar=='!')//Detecting potential Commented Out Parts
-                    {
-                        PotentialComment = true;
-                    }
-                    else if(LineChar=" "|| LineChar="	")
-                    {
-                        CurrentTag = ScanBuffer;
-                        if(CurrentTag=="hkobject")//(Assuming inside subnode of <hksection name="__data__"> tag)
-                        {
-                        
-                        }
-                        else if(CurrentTag=="?xml")
-                        {
-                        
-                        }
-                        else if(CurrentTag!="hksection")//(Skipping information of about which section reading data on)
-                        {
-                        }
-                    }
-                }
-                else
-                {
-                    ScanBuffer += LineChar;
-                }
-            }
-            else
-            {
-                if (LineChar == '<')//Don't worry about tagcontent yet
+					if(!ScanBuffer.empty())
+					{
+						if(LineChar=='!')//Detecting potential Commented Out Parts
+						{
+							PotentialComment = true;
+						}
+						else if(LineChar==" "|| LineChar=="	")
+						{
+							CurrentTag = ScanBuffer;
+						}
+						else
+						{
+							ScanBuffer += LineChar;
+						}
+				}
+				else if(LineChar!=' '&& LineChar!='	' && LineChar!='\n')
+				{
+					ScanBuffer += LineChar;
+					if(LineChar!='\\')
+					{
+						ScanningArgData=true;Stage=0;
+					}
+				}
+			}
+			else if(TagContentStage>0)
+			{
+			
+			}
+			else
+			{
+                if (LineChar == '<')
                 {
                     InsideTag = true;
-                    Stage = 999;//
-                }
-            }
-        }/*
-        else if(HkClassType=="hkbBehaviorGraphStringData")//Setting names
-        {
-        
-        }
-        else if(HkClassType=="hkbVariableValueSet")//Setting Variable Values
-        {
-        
-        }
-        else if(HkClassType=="hkbBehaviorGraphData")//Setting Role values
-        {
-        
-        }*/
-        //else if(HkClassType=="hkbBehaviorGraph"){}
-        else//Assuming inside an hkobject with name of CurrentNodeName
-        {		
-            if (InsideTag)
-            {
-                if (LineChar == '>')
-                {
-                }
-            }
-            else if (LineChar == '<'){	InsideTag = true; }
-        }
-    }
+				}
+				else if(LineChar!=' '&& LineChar!='	' && LineChar!='\n')
+				{
+					ScanBuffer = LineChar;
+					TagContentStage = 1;
+				}
+			}
+		}
+	}
     return true;
 }
 

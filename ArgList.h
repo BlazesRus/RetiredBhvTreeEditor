@@ -24,11 +24,20 @@ public:
     /// <param name="Value">The value.</param>
     void Add(std::string Key, ArgStringList Value)
     {//https://stackoverflow.com/questions/31792229/how-to-set-a-value-in-an-unordered-map-and-find-out-if-a-new-key-was-added
-        auto p = this->insert({ Key, Value });
-        if (!p.second) {
-            // overwrite previous value
-            p.first->second = Value;
-        }
+        this->insert_or_assign(Key, Value);
+    }
+    /// <summary>
+    /// Determines whether the specified target key has key.
+    /// </summary>
+    /// <param name="TargetKey">The target key.</param>
+    /// <returns>bool</returns>
+    bool HasKey(std::string TargetKey)
+    {
+        ArgList::iterator it;
+        it = this->find(TargetKey);
+        if (it != this->end())
+            return true;
+        return false;
     }
     ArgList(){}
     ~ArgList(){}
