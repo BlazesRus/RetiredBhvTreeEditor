@@ -26,6 +26,7 @@ public:
     {//https://stackoverflow.com/questions/31792229/how-to-set-a-value-in-an-unordered-map-and-find-out-if-a-new-key-was-added
         this->insert_or_assign(Key, Value);
     }
+
     /// <summary>
     /// Determines whether the specified target key has key.
     /// </summary>
@@ -37,6 +38,23 @@ public:
         it = this->find(TargetKey);
         if (it != this->end())
             return true;
+        return false;
+    }
+
+    /// <summary>
+    /// Erases the key(Returns true if key existed).
+    /// </summary>
+    /// <param name="TargetKey">The target key.</param>
+    /// <returns>bool</returns>
+    bool EraseKey(std::string TargetKey)
+    {
+        ArgList::iterator it;
+        it = this->find(TargetKey);
+        if (it != this->end())
+        {
+            erase(it);
+            return true;
+        }
         return false;
     }
     ArgList(){}
