@@ -10,8 +10,31 @@
 
 class TagElement
 {
-    unsigned int NodeIndex;//Could also easily act as a key to ordered map
+private:
+    TagElement()
+    {
+        NodeIndex = 0;
+        NodeName = "";
+    }
+public:
+    /// <summary>
+    /// The node index (Could also easily act as a key to ordered map)
+    /// </summary>
+    unsigned int NodeIndex;
+/// <summary>
+/// The node name
+/// </summary>
     std::string NodeName;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TagElement"/> class.
+    /// </summary>
+    /// <param name="nodeName">Name of the node.</param>
+    /// <param name="nodeIndex">Index of the node.</param>
+    TagElement(std::string nodeName, unsigned int nodeIndex)
+    {
+        NodeName = nodeName;
+        NodeIndex = nodeIndex;
+    }
 };
 
 /// <summary>
@@ -29,7 +52,8 @@ class TagDepthTree : std::vector<TagElement>
 /// <param name="nodeName">Name of the node.</param>
     void AddTag(unsigned int nodeIndex, std::string nodeName)
     {
-
+        TagElement NewTag(nodeName, nodeIndex);
+        this->push_back(NewTag);
     }
 
 /// <summary>
@@ -37,9 +61,18 @@ class TagDepthTree : std::vector<TagElement>
 /// </summary>
 /// <param name="tagName">Name of the tag.</param>
 /// <returns>Index of Tag Match</returns>
-    int RemoveLastTagMatch(std::string tagName)
+    unsigned int RemoveLastTagMatch(std::string tagName)
     {
-        unsigned int nodeIndex;
+        unsigned int nodeIndex = 0;
+        for (TagDepthTree::reverse_iterator i = this->rbegin(), TreeEnd = this->rend(); nodeIndex==0 && i != TreeEnd; ++i)
+        {
+            if(i->NodeName==tagName)
+            { 
+                nodeIndex = i->NodeIndex;
+                std::advance(i, 1);//Based on https://stackoverflow.com/questions/1830158/how-to-call-erase-with-a-reverse-iterator
+                this->erase(i.base());
+            }
+        }
         return nodeIndex;
     }
 };

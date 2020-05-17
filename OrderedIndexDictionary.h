@@ -58,6 +58,20 @@ public:
 		this->erase(Key);
 		RemovedIndexes.push_back(Key);
     }
+	
+    /// <summary>
+    /// Determines whether the specified target index has key.
+    /// </summary>
+    /// <param name="TargetIndex">Index of the target.</param>
+    /// <returns>bool</returns>
+    bool HasKey(unsigned int TargetIndex)
+    {
+        OrderedIndexDictionary<ValueType>::iterator it;
+        it = this->find(TargetIndex);
+        if (it != this->end())
+            return true;
+        return false;
+    }
     /// <summary>
     /// Clears this instance.
     /// </summary>

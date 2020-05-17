@@ -100,22 +100,6 @@ public:
         return false;
     }
     /// <summary>
-    /// Erases the key(Returns true if key existed).
-    /// </summary>
-    /// <param name="TargetKey">The target key.</param>
-    /// <returns>bool</returns>
-    bool EraseKey(unsigned int TargetIndex)
-    {
-        DataDictionary::iterator it;
-        it = this->find(TargetIndex);
-        if (it != this->end())
-        {
-            erase(it);
-            return true;
-        }
-        return false;
-    }
-    /// <summary>
     /// Initializes a new instance of the <see cref="DataDictionary"/> class.
     /// </summary>
     DataDictionary() {}

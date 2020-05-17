@@ -46,7 +46,7 @@ public:
     /// </summary>
     /// <param name="TargetKey">The target key.</param>
     /// <returns>bool</returns>
-    bool EraseKey(std::string TargetKey)
+    bool Remove(std::string TargetKey)
     {
         ArgList::iterator it;
         it = this->find(TargetKey);
