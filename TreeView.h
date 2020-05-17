@@ -1099,6 +1099,54 @@ protected:
 
     }
     // Message handlers
+	void OnCM_DeleteNode()
+	{
+		//DeleteNode(m_pSelected, TRUE);
+	}
+	void OnCM_ModifyNodeText()
+	{
+/*		if (NodeTextDlg(m_pSelected->DisplayName) == TRUE)
+		{
+			Invalidate();
+		}*/
+	}
+
+	//void OnCM_ToggleConnectingLines()
+	//{
+	//	m_bShowLines = !m_bShowLines;
+
+	//	Invalidate();
+	//}
+	//void OnCM_SetConnectingLinesColor()
+	//{
+	//	CColorDialog ccd(m_crConnectingLines, CC_FULLOPEN | CC_ANYCOLOR);
+
+	//	if (ccd.DoModal() == IDOK)
+	//	{
+	//		m_crConnectingLines = ccd.GetColor();
+	//		Invalidate();
+	//	}
+	//}
+	//void OnCM_SetFont()
+	//{
+	//	CFontDialog cfd(&m_lgFont, CF_SCREENFONTS | CF_INITTOLOGFONTSTRUCT);
+
+	//	if (cfd.DoModal() == IDOK)
+	//	{
+	//		SetTextFont(cfd.GetSize() / 10, cfd.IsBold(), cfd.IsItalic(), cfd.GetFaceName());
+	//		Invalidate();
+	//	}
+	//}
+	//void OnCM_SetDefaultColor()
+	//{
+	//	CColorDialog ccd(m_crDefaultTextColor, CC_FULLOPEN | CC_ANYCOLOR);
+
+	//	if (ccd.DoModal() == IDOK)
+	//	{
+	//		m_crDefaultTextColor = ccd.GetColor();
+	//		Invalidate();
+	//	}
+	//}
 
     // Overrides
     // ClassWizard generated virtual function overrides
@@ -1399,5 +1447,8 @@ BEGIN_MESSAGE_MAP(TreeView, CView)
     ON_COMMAND(CM_DELETENODE, OnCM_DeleteNode)
     ON_COMMAND(CM_MODIFYNODETEXT, OnCM_ModifyNodeText)
     //ON_COMMAND(CM_TOGGLECONNECTINGLINES, OnCM_ToggleConnectingLines)
+    //ON_COMMAND(CM_SETCONNECTINGLINESCOLOR, OnCM_SetConnectingLinesColor)
+    //ON_COMMAND(CM_SETFONT, OnCM_SetFont)
+    //ON_COMMAND(CM_SETDEFAULTCOLOR, OnCM_SetDefaultColor)
 END_MESSAGE_MAP()
 #endif
