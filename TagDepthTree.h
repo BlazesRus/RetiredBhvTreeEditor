@@ -11,6 +11,9 @@
 class TagElement
 {
 private:
+    /// <summary>
+    /// Prevents a default instance of the <see cref="TagElement"/> class from being created.
+    /// </summary>
     TagElement()
     {
         NodeIndex = 0;
@@ -43,8 +46,8 @@ public:
 /// </summary>
 /// <seealso cref="std::vector{TagElement}" />
 class TagDepthTree : std::vector<TagElement>
-{//size_t DepthLevel = 0;
-
+{
+public:
 /// <summary>
 /// Adds the tag.
 /// </summary>

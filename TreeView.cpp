@@ -216,16 +216,13 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
 				    switch(TagType)
 					{
 					default://TagIsClosing(TagType==2)
-						//Decrease TagDepth
+                        //Decrease TagDepth
+                        TagDepth.RemoveLastTagMatch(CurrentTag);
 						break;
 					case 1://SelfContainedTag
+                        NodeBank.Add(CurrentTag, ArgBuffer, CurrentNodeIndex);
                         break;
 					case 3://XMLVersionTag(Same as SelfContained Tag except for ? in front and such)
-						break;
-					case 2://TagIsClosing
-						//if(CurrentTag=="hkobject")//Potentially exiting Linked Class Object
-						//{
-						//}
 						break;
 					}
 					CurrentTag = "";//Reset it to clear buffer so next tag has fresh storage
