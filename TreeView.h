@@ -1050,7 +1050,7 @@ protected:
                     ChildNode = &this->AttriNameBank[*targetNodeIndex];
                 }
                 break;
-            case 2:
+            case 3:
                 for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     ChildNode = &this->CharPropBank[*targetNodeIndex];
