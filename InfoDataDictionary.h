@@ -22,6 +22,7 @@ class InfoNode
 	UIntVector ChildNodes;
 
 	std::string TagName;
+	std::string TagContent;
 
 	/// <summary>
 	/// The b open
@@ -40,6 +41,7 @@ public:
 	InfoNode(std::string name)
 	{
 		TagName = name;
+		TagContent = "";
 		CoordData.SetRectEmpty();
 		bOpen = TRUE;
 	}

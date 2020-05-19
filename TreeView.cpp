@@ -194,7 +194,7 @@ bool TreeView::LoadDataFromFile(std::string FilePath)
             {
                 if (LineChar == ',')
                 {
-                    LastArg.push_back(ArgElement);
+                    LastArg.Add(ArgElement);
                 }
                 else if (LineChar == '\"')
                 {

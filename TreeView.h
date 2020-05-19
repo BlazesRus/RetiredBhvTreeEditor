@@ -113,6 +113,11 @@ protected:
     /// </summary>
     InfoDataDictionary CharPropBank;
 
+    /// <summary>
+    /// Nodes bank holding generated Node Linkage order when toggled on(Regenerated each time opened up)
+    /// </summary>
+    InfoDataDictionary LinkageBank;
+
     //Places all root-nodes at or below X coordinate of RootEnd
     const long RootEnd = 41;
     RootNode TreeStart = "Tree Data";
@@ -120,6 +125,33 @@ protected:
     RootNode VariableDataStart = "Variable Data";
     RootNode AttriNameStart = "Attribute Names";
     RootNode CharPropStart = "Character Properties";
+	RootNode LinkageStart = "Node Linkage Order";
+
+    //
+/// <summary>
+/// The node type found (1 = RootNode; 2 = InfoNode; 3 = DataNode)(Node Info for Message Handlers)
+/// </summary>
+    short NodeTypeFound = 0;
+    /// <summary>
+    /// The bank type(0=EventData;1=VariableData;3=AttriNameData;4=CharacterPropertyData;5=NodeLinkageData)
+    /// </summary>
+    short TargetBankType = 0;
+    /// <summary>
+    /// The Bank index
+    /// </summary>
+    unsigned int TargetIndex = 0;
+    /// <summary>
+    /// The target root node
+    /// </summary>
+    RootNode* TargetRootNode = nullptr;
+    /// <summary>
+    /// The target information node
+    /// </summary>
+    InfoNode* TargetInfoNode = nullptr;
+    /// <summary>
+    /// The target node
+    /// </summary>
+    DataNode* TargetNode = nullptr;
 
 /*
     NodeBank.Add("Linked Conditional Tree", 1);//Condition Classes linked together to other nodes in more descriptive way
@@ -291,9 +323,9 @@ public:
     {
         //1=RootNode;2=InfoNode;3=DataNode
         bool FailedToFindNode = false;
-        RootNode* TargetRootNode = nullptr;
-        InfoNode* TargetInfoNode = nullptr;
-        DataNode* TargetNode = nullptr;
+        TargetRootNode = nullptr;
+        TargetInfoNode = nullptr;
+        TargetNode = nullptr;
 
         if (point.x < RootEnd)//Search for RootNode nearest to point
         {
@@ -304,7 +336,7 @@ public:
         {
             if (point.y > TreeStart.CoordData.bottom)//Main NodeTree nodes
             {
-                TargetNode = RetrieveNodeByPoint(point);
+                TargetNode = RetrieveDataNodeByPoint(point);
                 if (TargetNode != nullptr) { ToggleNode(TargetNode, bInvalidate); FailedToFindNode = false; }
             }
             else
@@ -515,7 +547,7 @@ protected:
             for (UIntVector::iterator targetNodeIndex = EventBank.RootNodes.begin(), EndIndex = EventBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetInfoNode = &this->EventBank[*targetNodeIndex];
-                iDocHeight = DrawRecursiveInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 0);
+                iDocHeight = RecursivelyDrawInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 0);
             }
         }
 
@@ -531,7 +563,7 @@ protected:
             for (UIntVector::iterator targetNodeIndex = VariableBank.RootNodes.begin(), EndIndex = VariableBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetInfoNode = &this->VariableBank[*targetNodeIndex];
-                iDocHeight = DrawRecursiveInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 1);
+                iDocHeight = RecursivelyDrawInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 1);
             }
         }
 
@@ -547,7 +579,7 @@ protected:
             for (UIntVector::iterator targetNodeIndex = AttriNameBank.RootNodes.begin(), EndIndex = AttriNameBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetInfoNode = &this->AttriNameBank[*targetNodeIndex];
-                iDocHeight = DrawRecursiveInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 2);
+                iDocHeight = RecursivelyDrawInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 2);
             }
         }
 
@@ -563,7 +595,7 @@ protected:
             for (UIntVector::iterator targetNodeIndex = CharPropBank.RootNodes.begin(), EndIndex = CharPropBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetInfoNode = &this->CharPropBank[*targetNodeIndex];
-                iDocHeight = DrawRecursiveInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 3);
+                iDocHeight = RecursivelyDrawInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 3);
             }
         }
 //---------------------------------------------------------------------------------------
@@ -581,88 +613,15 @@ protected:
             for (UIntVector::iterator CurrentVal = RootNodes.begin(), LastVal = RootNodes.end(); CurrentVal != LastVal; ++CurrentVal)
             {
                 targetNode = &NodeBank[*CurrentVal];
-                iDocHeight = DrawRecursiveNodes(pDC, targetNode, RootEnd, y + rNode.Height(), rFrame);
+                iDocHeight = RecursivelyDrawNodes(pDC, targetNode, RootEnd, y + rNode.Height(), rFrame);
             }
         }
 
         return iDocHeight;
     }
 
-    //BankTypes 0=Event; 1=Variable
-    int DrawRecursiveInfoNodes(CDC* pDC, InfoNode* pNode, int x, int y, CRect rFrame, short BankType)
-    {
-        int		iDocHeight = 0;		// Total document height
-        CRect	rNode;
-
-        // The node's location and dimensions on screen
-        rNode.left = x;
-        rNode.top = y;
-        rNode.right = rFrame.right - m_iPadding;
-        rNode.bottom = y + m_iLineHeight;
-
-        //pNode->CoordData.CopyRect(rNode);		// Record the rectangle
-
-        COLORREF crOldText = pDC->SetTextColor(m_crDefaultTextColor);
-
-        // MULTILINE TEXT - begins
-        CString	cs = pNode->TagName.c_str();
-        int		iPos;
-        int ArgSize;
-
-        // Height of a line of text(All parts of Node at same height--limiting to single line nodes for now unless need to expand)
-        rNode.bottom = rNode.top + m_iLineHeight;
-
-        //------------------Draw primary NodeButton-------------------------------------------------
-        // Find out how much text fits in one line
-        iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
-        pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
-
-        pDC->SetTextColor(crOldText);
-        if (pNode->ChildNodes.empty())
-        {
-            return pNode->CoordData.Height();
-        }
-        else if (pNode->bOpen)// If the node is open AND it has children, then draw those
-        {
-            InfoNode* targetNode = nullptr;
-            switch (BankType)
-            {
-            default:
-                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
-                {
-                    targetNode = &this->EventBank[*targetNodeIndex];
-                    iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 0);
-                }
-                break;
-            case 1:
-                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
-                {
-                    targetNode = &this->VariableBank[*targetNodeIndex];
-                    iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 1);
-                }
-                break;
-            case 2:
-                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
-                {
-                    targetNode = &this->AttriNameBank[*targetNodeIndex];
-                    iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 2);
-                }
-                break;
-            case 3:
-                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
-                {
-                    targetNode = &this->CharPropBank[*targetNodeIndex];
-                    iDocHeight = DrawRecursiveInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 3);
-                }
-                break;
-            }
-
-        }
-
-        return iDocHeight + pNode->CoordData.Height();
-    }
-
-    int DrawRecursiveNodes(CDC* pDC, DataNode* pNode, int x, int y, CRect rFrame)
+    template <typename NodeType>
+    int DrawTagContentNode(CDC* pDC, NodeType* pNode, int x, int y, CRect rFrame, int iDocHeight)
     {
         int		iDocHeight = 0;		// Total document height
         CRect	rNode;
@@ -679,7 +638,7 @@ protected:
         COLORREF crOldText = pDC->SetTextColor(m_crDefaultTextColor);
 
         // MULTILINE TEXT - begins
-        CString	cs = pNode->TagName.c_str();
+        CString nodeText = pNode->TagName.c_str();
         int		iPos;
         int ArgSize;
 
@@ -688,77 +647,215 @@ protected:
 
         //------------------Draw primary NodeButton-------------------------------------------------
         // Find out how much text fits in one line
-        iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
+        iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, nodeText);
         // Draw only if the node is visible
         if (rNode.bottom > 0 && rNode.top < rFrame.bottom)
         {
-            //Construct TagButton
-            pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);//Temporary Code(Switch to button derivative later)
+            pDC->DrawText(nodeText.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
             rNode.left += iPos;
         }
+    }
+
+    /// <summary>
+    /// Draws single-line non-clickable TagContentNode
+    /// </summary>
+    /// <param name="pDC">The p dc.</param>
+    /// <param name="nodeText">The node text.</param>
+    /// <param name="x">The x.</param>
+    /// <param name="y">The y.</param>
+    /// <param name="rFrame">The r frame.</param>
+    /// <param name="iDocHeight">Height of the i document.</param>
+    void DrawTagContentInfo(CDC* pDC, CString nodeText, int x, int y, CRect rFrame, int iDocHeight)
+    {
+        int		iDocHeight = 0;		// Total document height
+        CRect	rNode;
+
+        // The node's location and dimensions on screen
+        rNode.left = x;
+        rNode.top = y;
+        rNode.right = rFrame.right - m_iPadding;
+        rNode.bottom = y + m_iLineHeight;
+
+        COLORREF crOldText = pDC->SetTextColor(m_crDefaultTextColor);
+
+        int		iPos;
+
+        // Height of a line of text(All parts of Node at same height--limiting to single line nodes for now unless need to expand)
+        rNode.bottom = rNode.top + m_iLineHeight;
+
+        //------------------Draw primary NodeButton-------------------------------------------------
+        // Find out how much text fits in one line
+        iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, nodeText);
+        // Draw only if the node is visible
+        if (rNode.bottom > 0 && rNode.top < rFrame.bottom)
+        {
+            pDC->DrawText(nodeText.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+        }
+    }
+
+    /// <summary>
+    /// Recursively the draw the InfoNodes
+    /// </summary>
+    /// <param name="pDC">The document pointer.</param>
+    /// <param name="pNode">The pointer of target node</param>
+    /// <param name="x">X position of node</param>
+    /// <param name="y">Y position of node</param>
+    /// <param name="rFrame">Frame Coordinates</param>
+    /// <param name="iDocHeight">Total document height</param>
+    /// <param name="BankType">NodeBank category(0:EventBank,1:VariableBank)</param>
+    /// <returns>int</returns>
+    int RecursivelyDrawInfoNodes(CDC* pDC, InfoNode* pNode, int x, int y, CRect rFrame, int iDocHeight, short BankType)
+    {
+        int		iDocHeight = 0;		// Total document height
+        CRect	rNode;
+
+        // The node's location and dimensions on screen
+        rNode.left = x;
+        rNode.top = y;
+        rNode.right = rFrame.right - m_iPadding;
+        rNode.bottom = y + m_iLineHeight;
+
+        COLORREF crOldText = pDC->SetTextColor(m_crDefaultTextColor);
+
+        // MULTILINE TEXT - begins
+        CString	cs = pNode->TagName.c_str();
+        int		iPos;
+
+        // Height of a line of text(All parts of Node at same height--limiting to single line nodes for now unless need to expand)
+        rNode.bottom = rNode.top + m_iLineHeight;
+
+        //------------------Draw primary NodeButton-------------------------------------------------
+        // Find out how much text fits in one line
+        iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
+        pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+        pNode->CoordData.CopyRect(rNode);		// Record the rectangle
+        pDC->SetTextColor(crOldText);
+        if(!pNode->TagContent.empty())
+        {
+            DrawTagContentInfo(pDC, pNode->TagContent.c_str(), x + iPos, y, rFrame, iDocHeight);
+        }
+        if (pNode->ChildNodes.empty())
+        {
+            return pNode->CoordData.Height();
+        }
+        else if (pNode->bOpen)// If the node is open AND it has children, then draw those
+        {
+            InfoNode* targetNode = nullptr;
+            switch (BankType)
+            {
+            default:
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    targetNode = &this->EventBank[*targetNodeIndex];
+                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 0);
+                }
+                break;
+            case 1:
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    targetNode = &this->VariableBank[*targetNodeIndex];
+                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 1);
+                }
+                break;
+            case 2:
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    targetNode = &this->AttriNameBank[*targetNodeIndex];
+                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 2);
+                }
+                break;
+            case 3:
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    targetNode = &this->CharPropBank[*targetNodeIndex];
+                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 3);
+                }
+                break;
+            }
+
+        }
+
+        return iDocHeight + pNode->CoordData.Height();
+    }
+
+    /// <summary>
+    /// Recursively draws the nodes.
+    /// </summary>
+    /// <param name="pDC">The document pointer.</param>
+    /// <param name="pNode">The pointer of target node</param>
+    /// <param name="x">X position of node</param>
+    /// <param name="y">Y position of node</param>
+    /// <param name="rFrame">Frame Coordinates</param>
+    /// <param name="iDocHeight">Total document height</param>
+    /// <returns>int</returns>
+    int RecursivelyDrawNodes(CDC* pDC, DataNode* pNode, int x, int y, CRect rFrame, int iDocHeight = 0)
+    {
+        CRect	rNode;
+
+        // The node's location and dimensions on screen
+        rNode.left = x;
+        rNode.top = y;
+        rNode.right = rFrame.right - m_iPadding;
+        rNode.bottom = y + m_iLineHeight;
+
+        COLORREF crOldText = pDC->SetTextColor(m_crDefaultTextColor);
+
+        // MULTILINE TEXT - begins
+        std::string nodeText = pNode->TagName.c_str();
+        std::string TempText;
+        int iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, nodeText.c_str());
+        int ArgSize;
+
+        // Height of a line of text(All parts of Node at same height--limiting to single line nodes for now unless need to expand)
+        rNode.bottom = rNode.top + m_iLineHeight;
+
         //-------------------------------------------------------------------------------------------------------
 
-        size_t NumberArgs, Index, LastElem;
-        for (auto const& [key, val] : pNode->ArgData)//Draw rest of Nodes based on Args
+        size_t NumberArgs;
+        //for (auto ArgElement : pNode->ArgData)//Draw rest of Nodes based on Args
+        for(ArgList::iterator ArgElement = pNode->ArgData.begin(), EndElement = pNode->ArgData.end(); ArgElement != EndElement; ++ArgElement)
         {
-            NumberArgs = val.size();
+            NumberArgs = ArgElement.value.size();
             if (NumberArgs == 0)//Non-Value Element
             {
-                cs = " " + key;
-                iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
-                pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
-                rNode.left += iPos;
+                TempText = " " + ArgElement.key;
+                ArgElement.value.ArgStart = iPos;
+                iPos += HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, TempText.c_str());
+                nodeText += TempText;
             }
-            else if (NumberArgs>1)//Multiple Linked Arg Buttons
+            else if (NumberArgs>1)//Multiple Linked Argument Elements
             {
-                cs = " " + key + "=\"";
-                iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
-                pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
-                rNode.left += iPos;
-                for (std::vector<std::string>::iterator Arg = val.begin(), FirstArg = Arg, LastArg = val.end(); Arg != LastArg; ++Arg)
+                TempText = " " + ArgElement.key + "=\"";
+                ArgElement.value.ArgStart = iPos;
+                iPos += HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, TempText.c_str());
+                nodeText += TempText;
+                std::vector<LONG>::iterator ArgPos = ArgElement.value.ArgPositions.begin();
+                for (ArgStringList::iterator Arg = ArgElement.value.begin(), FirstArg = Arg, LastArg = ArgElement.value.end(); Arg != LastArg; ++Arg)
                 {
-                    if (Arg != FirstArg)
-                    {
-                        cs = ", ";
-                        pDC->DrawText(cs.Left(3), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
-                        rNode.left += 2;
-                    }
-                    cs = *Arg->c_str();
-                    iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
-                    pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);//Temporary Code
-                    rNode.left += iPos;
+                    TempText = Arg != FirstArg? *Arg: ", "+ *Arg;
+                    //Add Starting position data into ArgStringList
+                    *ArgPos = iPos;
+                    iPos += HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, TempText.c_str());
+                    ++ArgPos;
                 }
-                cs = "\"";
-                pDC->DrawText(cs.Left(2), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
-                rNode.left += 1;
+                TempText += "\"";
+                ++iPos;
             }
-            else//Single Arg Link
+            else//Single Argument Link
             {
-                cs = " " + key[0];
-                iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
-                pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);//Temporary Code
-                rNode.left += iPos;
+                TempText = " " + ArgElement.key[0]+"=\""+ArgElement.value[0] + "\"";
+                ArgElement.value.ArgStart = iPos;
+                iPos += HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, TempText.c_str());
             }
         }
-        //if (!pNode.TagContent.empty())
-        //{
-        //    cs = ">";
-        //    pDC->DrawText(cs.Left(2), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
-        //    rNode.left += 1;
-        //    for (vector<std::string>::iterator Arg = TagContent.begin(), FirstArg = Arg, LastArg = TagContent.end(); Arg != LastArg; ++Arg)
-        //    {//Create TagContent NodeButton(s)
-        //        if (Arg != FirstArg)
-        //        {
-        //            cs = ", ";
-        //            pDC->DrawText(cs.Left(3), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
-        //            rNode.left += 2;
-        //        }
-        //        cs = *Arg;
-        //        iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, cs);
-        //        pDC->DrawText(cs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);//Temporary Code
-        //        rNode.left += iPos;
-        //    }
-        //}
+        //Draw only if the node is visible
+        if (rNode.bottom > 0 && rNode.top < rFrame.bottom)
+        {
+            pDC->DrawText(nodeText.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+            rNode.left += iPos;
+            pNode->CoordData.CopyRect(rNode);		// Record the rectangle
+        }
+        //Create TagContent as SpecialConnected nodes
         pDC->SetTextColor(crOldText);
         if (pNode->ChildNodes.empty())
         {
@@ -770,7 +867,7 @@ protected:
             for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetNode = &this->NodeBank[*targetNodeIndex];
-                iDocHeight = DrawRecursiveNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame);
+                iDocHeight = RecursivelyDrawNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame);
             }
         }
 
@@ -811,6 +908,8 @@ protected:
     /// <param name="pDC">The document pointer</param>
     void DrawLinesFromRoot(CDC* pDC)
     {
+		InfoNode* targetInfoNode = nullptr;
+		DataNode* targetInfoNode = nullptr;
     }
 
     /// <summary>
@@ -1000,25 +1099,23 @@ protected:
     }
 
     /// <summary>
-    /// Retrieves the nearest root node.
+    /// Retrieves the nearest root node and stores in TargetRootNode.
     /// </summary>
     /// <param name="point">The point.</param>
-    /// <returns>RootNode *.</returns>
-    RootNode* RetrieveNearestRootNode(CPoint point)
+    void RetrieveNearestRootNode(CPoint point)
     {
-        RootNode* targetNode = nullptr;
-        if (EventDataStart.CoordData.PtInRect(point)){ return &EventDataStart; }
-        else if (VariableDataStart.CoordData.PtInRect(point)) { return &VariableDataStart; }
-        else if (AttriNameStart.CoordData.PtInRect(point)) { return &AttriNameStart; }
-        else if (CharPropStart.CoordData.PtInRect(point)) { return &CharPropStart; }
-        else { return &TreeStart; }
+        if (EventDataStart.CoordData.PtInRect(point)){ TargetRootNode = &EventDataStart; }
+        else if (VariableDataStart.CoordData.PtInRect(point)) { TargetRootNode = &VariableDataStart; }
+        else if (AttriNameStart.CoordData.PtInRect(point)) { TargetRootNode = &AttriNameStart; }
+        else if (CharPropStart.CoordData.PtInRect(point)) { TargetRootNode = &CharPropStart; }
+        else { TargetRootNode = &TreeStart; }
     }
 
     /// <summary>
     /// Recursively search node banks for matching node coordinates(classic node search code used similar to https://www.codeproject.com/Articles/9887/CStaticTreeCtrl-A-CStatic-derived-custom-Tree-cont).
     /// </summary>
     /// <param name="point">The point.</param>
-    /// <param name="pNode">The p node.</param>
+    /// <param name="pNode">The pointer of target node</param>
     /// <param name="BankType">Type of the bank.</param>
     /// <returns>InfoNode*</returns>
     InfoNode* RecursiveInfoNodeSearch(const CPoint& point, InfoNode* pNode, short BankType)
@@ -1060,15 +1157,12 @@ protected:
         }
     }
 
-    InfoNode* RetrieveInfoNodeByPoint(CPoint point)
+    /// <summary>
+    /// Retrieves the information node by point (Sets in TargetInfoNode).
+    /// </summary>
+    /// <param name="point">The point.</param>
+    void RetrieveInfoNodeByPoint(CPoint point)
     {
-        InfoNode* targetNode = nullptr;
-        /*
-    RootNode EventDataStart = "Event Data";
-    RootNode VariableDataStart = "Variable Data";
-    RootNode AttriNameStart = "Attribute Names";
-    RootNode CharPropStart = "Character Properties";
-        */
         if(NodeSearchRange==0)
         {
             if (EventDataStart.bOpen && point.y > VariableDataStart.CoordData.top){ NodeSearchRange = 0; }
@@ -1085,13 +1179,33 @@ protected:
         default:
             break;
         }
-        return targetNode;
     }
 
-    DataNode* RetrieveNodeByPoint(CPoint point)
+    void RetrieveDataNodeByPoint(CPoint point)
     {
-        DataNode* targetNode = nullptr;
-        return targetNode;
+	
+	}
+
+    void RetrieveNodeByPoint(CPoint point)
+    {
+        if (point.x < RootEnd)//Search for RootNode nearest to point
+        {
+            TargetRootNode = RetrieveNearestRootNode(point);
+			NodeTypeFound = 1;
+        }
+        else
+        {
+            if (point.y > TreeStart.CoordData.bottom)//Main NodeTree nodes
+            {
+                TargetNode = RetrieveDataNodeByPoint(point);
+				NodeTypeFound = 3;
+            }
+            else
+            {
+                TargetInfoNode = RetrieveInfoNodeByPoint(point);
+				NodeTypeFound = 2;
+            }
+        }
     }
 
     void AddTagContentNode(unsigned int TargetPIndex)
@@ -1229,26 +1343,26 @@ protected:
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point)
     {
         //1=RootNode;2=InfoNode;3=DataNode
-        short NodeTypeFound = 0;
-        RootNode* TargetRootNode = nullptr;
-        InfoNode* TargetInfoNode = nullptr;
-        DataNode* TargetNode = nullptr;
+        NodeTypeFound = 0;
+        TargetRootNode = nullptr;
+        TargetInfoNode = nullptr;
+        TargetNode = nullptr;
 
         if (point.x < RootEnd)//Search for RootNode nearest to point
         {
-            TargetRootNode = RetrieveNearestRootNode(point);
+            RetrieveNearestRootNode(point);
             if (TargetRootNode != nullptr) { NodeTypeFound = 1; }
         }
         else
         {
             if (point.y > TreeStart.CoordData.bottom)//Main NodeTree nodes
             {
-                TargetNode = RetrieveNodeByPoint(point);
+                RetrieveDataNodeByPoint(point);
                 if (TargetNode != nullptr) { NodeTypeFound = 3; }
             }
             else
             {
-                TargetInfoNode = RetrieveInfoNodeByPoint(point);
+                RetrieveInfoNodeByPoint(point);
                 if (TargetInfoNode != nullptr) { NodeTypeFound = 2; }
             }
         }
@@ -1283,10 +1397,10 @@ protected:
         ScreenToClient(&cp);
 
         //1=RootNode;2=InfoNode;3=DataNode
-        short NodeTypeFound = 0;
-        RootNode* targetRootNode = nullptr;
-        InfoNode* TargetInfoNode = nullptr;
-        DataNode* TargetNode = nullptr;
+        NodeTypeFound = 0;
+        TargetRootNode = nullptr;
+        TargetInfoNode = nullptr;
+        TargetNode = nullptr;
 
         if (point.x < RootEnd)//Search for RootNode nearest to point
         {
@@ -1297,7 +1411,7 @@ protected:
         {
             if (point.y > TreeStart.CoordData.bottom)//Main NodeTree nodes
             {
-                TargetNode = RetrieveNodeByPoint(point);
+                TargetNode = RetrieveDataNodeByPoint(point);
                 if (TargetNode != nullptr) { NodeTypeFound = 3; }
             }
             else
