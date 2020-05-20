@@ -79,6 +79,7 @@ protected:
     LOGFONT			m_lgFont;
     CFont			m_Font;
     COLORREF		m_crDefaultTextColor;
+    COLORREF		m_TagContentColor = RGB(40, 40, 160);
     COLORREF		m_crConnectingLines;
     const COLORREF	m_ArgColor = RGB(202, 201, 201);//(Lighter Shade of Sonic Silver) https://www.schemecolor.com/sample?getcolor=7a7978
 
@@ -768,12 +769,12 @@ protected:
     /// <summary>
     /// Draws single-line non-clickable TagContentNode
     /// </summary>
-    /// <param name="pDC">The p dc.</param>
-    /// <param name="nodeText">The node text.</param>
-    /// <param name="x">The x.</param>
-    /// <param name="y">The y.</param>
-    /// <param name="rFrame">The r frame.</param>
-    /// <param name="iDocHeight">Height of the i document.</param>
+    /// <param name="pDC">The document pointer.</param>
+    /// <param name="pNode">The pointer of target node</param>
+    /// <param name="x">X position of node</param>
+    /// <param name="y">Y position of node</param>
+    /// <param name="rFrame">Frame Coordinates</param>
+    /// <param name="iDocHeight">Total document height</param>
     void DrawTagContentInfo(CDC* pDC, CString nodeText, int x, int y, CRect rFrame, int iDocHeight)
     {
         int		iDocHeight = 0;		// Total document height
@@ -902,6 +903,44 @@ protected:
     }
 
     /// <summary>
+    /// Draws clickable TagContentNode
+    /// </summary>
+    /// <param name="pDC">The document pointer.</param>
+    /// <param name="pNode">The pointer of target node</param>
+    /// <param name="x">X position of node</param>
+    /// <param name="y">Y position of node</param>
+    /// <param name="rFrame">Frame Coordinates</param>
+    /// <param name="iDocHeight">Total document height</param>
+    void DrawDataContentInfo(CDC* pDC, TagContent &DataContent, int x, int y, CRect rFrame, int iDocHeight)
+    {
+        int		iDocHeight = 0;		// Total document height
+        CRect	rNode;
+
+        // The node's location and dimensions on screen
+        rNode.left = x;
+        rNode.top = y;
+        rNode.right = rFrame.right - m_iPadding;
+        rNode.bottom = y + m_iLineHeight;
+
+        COLORREF crOldText = pDC->SetTextColor(m_TagContentColor);
+
+        int		iPos;
+
+        // Height of a line of text
+        rNode.bottom = rNode.top + m_iLineHeight;
+
+        //------------------Draw primary NodeButton-------------------------------------------------
+        // Find out how much text fits in one line
+        iPos = HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, DataContent.Content);
+        // Draw only if the node is visible
+        if (rNode.bottom > 0 && rNode.top < rFrame.bottom)
+        {
+            pDC->DrawText(DataContent.Content.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+            DataContent.CoordData.CopyRect(rNode);
+        }
+    }
+
+    /// <summary>
     /// Recursively draws the nodes.
     /// </summary>
     /// <param name="pDC">The document pointer.</param>
@@ -922,6 +961,7 @@ protected:
         rNode.bottom = y + m_iLineHeight;
 
         COLORREF crOldText = pDC->SetTextColor(m_crDefaultTextColor);
+        CString nodeTextcs;
 
         // MULTILINE TEXT - begins
         std::string nodeText = pNode->TagName.c_str();
@@ -974,12 +1014,24 @@ protected:
         //Draw only if the node is visible
         if (rNode.bottom > 0 && rNode.top < rFrame.bottom)
         {
-            pDC->DrawText(nodeText.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+            nodeTextcs = nodeText.c_str();
+            pDC->DrawText(nodeTextcs.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
             rNode.left += iPos;
             pNode->CoordData.CopyRect(rNode);		// Record the rectangle
         }
         //Create TagContent as SpecialConnected nodes
         pDC->SetTextColor(crOldText);
+        size_t ContentSize = pNode->NodeContent.size();
+        if(ContentSize=1)
+        {
+            DrawDataContentInfo(pDC, pNode->NodeContent[0], x + iPos, y, rFrame, iDocHeight);//Single-Line format TagContent
+        }
+        else if(ContentSize>1)
+        {//Determine how to display by things like node-type, TagName etc
+            if(ContentSize=4)//Possible QuadVector type field
+            {
+            }
+        }
         if (pNode->ChildNodes.empty())
         {
             return pNode->CoordData.Height();

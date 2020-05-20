@@ -7,6 +7,7 @@
 
 #include "ArgList.h"
 #include "..\BasicXMLGUI\UIntVector.h"
+#include "TagContentVector.h"
 
 /// <summary>
 /// Class named BasicDataNode(derive into DataNode subclass into view). (Node links to other nodes in node bank)
@@ -24,9 +25,21 @@ class DataNode
 	/// </summary>
 	UIntVector ChildNodes;
 
+	/// <summary>
+	/// The tag name
+	/// </summary>
 	std::string TagName;
 	
+	/// <summary>
+	/// The argument data
+	/// </summary>
 	ArgList ArgData;
+
+	/// <summary>
+	/// The node content
+	/// </summary>
+	TagContentVector NodeContent;
+
     //0 = Default
 	//1 = ClassNode root
 	//2 = NonClassNode Level tag
