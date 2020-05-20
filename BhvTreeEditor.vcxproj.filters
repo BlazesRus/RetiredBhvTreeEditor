@@ -185,6 +185,9 @@
     <ClInclude Include="TagDepthTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TagContentVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AppResources.rc">

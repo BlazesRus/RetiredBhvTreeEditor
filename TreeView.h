@@ -118,14 +118,41 @@ protected:
     /// </summary>
     InfoDataDictionary LinkageBank;
 
+    /// <summary>
+    /// The linked condition bank
+    /// </summary>
+    InfoDataDictionary LinkedConditionBank;
+
     //Places all root-nodes at or below X coordinate of RootEnd
     const long RootEnd = 41;
+    /// <summary>
+    /// The tree root node
+    /// </summary>
     RootNode TreeStart = "Tree Data";
+    /// <summary>
+    /// Node information for event data root
+    /// </summary>
     RootNode EventDataStart = "Event Data";
+    /// <summary>
+    /// Node information for variable data root
+    /// </summary>
     RootNode VariableDataStart = "Variable Data";
+    /// <summary>
+    /// Node information for attribute name data root
+    /// </summary>
     RootNode AttriNameStart = "Attribute Names";
+    /// <summary>
+    /// Node information for character property data root
+    /// </summary>
     RootNode CharPropStart = "Character Properties";
-	RootNode LinkageStart = "Node Linkage Order";
+    /// <summary>
+    /// Classes Linked together based on calls to other nodes
+    /// </summary>
+    RootNode LinkageStart = "Node Linkage Order";
+    /// <summary>
+    /// Condition Classes linked together to other nodes in more descriptive way
+    /// </summary>
+    RootNode LinkedConditionStart = "Linked Condition Tree";
 
     //
 /// <summary>
@@ -153,10 +180,6 @@ protected:
     /// </summary>
     DataNode* TargetNode = nullptr;
 
-/*
-    NodeBank.Add("Linked Conditional Tree", 1);//Condition Classes linked together to other nodes in more descriptive way
-    NodeBank.Add("Usage Linked Tree", 1);//Classes Linked together based on calls to other nodes
-*/
     //Index of Node that ClassNodes are within
     unsigned int ClassNodeStart = 0;
     short NodeSearchRange = 0;
@@ -214,6 +237,9 @@ protected:
         VariableBank.clear();
         AttriNameBank.clear();
         CharPropBank.clear();
+
+        LinkageBank.clear();
+        LinkedConditionBank.clear();
     }
 
     // Operations
@@ -224,7 +250,7 @@ public:
     /// <param name="nHeight">Height of the n.</param>
     /// <param name="bBold">The b bold.</param>
     /// <param name="bItalic">The b italic.</param>
-    /// <param name="csFaceName">Name of the cs face.</param>
+    /// <param name="csFaceName">Name of the font applied</param>
     virtual void SetTextFont(LONG nHeight, BOOL bBold, BOOL bItalic, const CString& csFaceName)
     {
         m_lgFont.lfHeight = -MulDiv(nHeight, GetDeviceCaps(GetDC()->m_hDC, LOGPIXELSY), 72);
@@ -265,9 +291,9 @@ public:
     /// Sets the default color of the text.
     /// </summary>
     /// <param name="crText">The text color to set to.</param>
-    virtual void SetDefaultTextColor(COLORREF crText)
+    virtual void SetDefaultTextColor(COLORREF textColor)
     {
-        m_crDefaultTextColor = crText;
+        m_crDefaultTextColor = textColor;
     }
 
     /// <summary>
@@ -277,8 +303,8 @@ public:
     /// <param name="bBold">The b bold.</param>
     /// <param name="bItalic">The b italic.</param>
     /// <param name="csFaceName">Name of the cs face.</param>
-    /// <param name="crText">The cr text.</param>
-    virtual void SetTextSettings(LONG nHeight, BOOL bBold, BOOL bItalic, const CString& csFaceName, COLORREF crText)
+    /// <param name="textColor">The color of the text</param>
+    virtual void SetTextSettings(LONG nHeight, BOOL bBold, BOOL bItalic, const CString& csFaceName, COLORREF textColor)
     {
         m_lgFont.lfHeight = -MulDiv(nHeight, GetDeviceCaps(GetDC()->m_hDC, LOGPIXELSY), 72);
         m_lgFont.lfWidth = 0;
@@ -313,7 +339,7 @@ public:
         pDC->SelectObject(pOldFont);
         pDC->RestoreDC(iSaved);
         ReleaseDC(pDC);
-        m_crDefaultTextColor = crText;
+        m_crDefaultTextColor = textColor;
     }
 
     /// <summary>
@@ -329,19 +355,19 @@ public:
 
         if (point.x < RootEnd)//Search for RootNode nearest to point
         {
-            TargetRootNode = RetrieveNearestRootNode(point);
+            RetrieveNearestRootNode(point);
             if (TargetRootNode != nullptr) { ToggleNode(TargetRootNode, bInvalidate); FailedToFindNode = false; }
         }
         else
         {
             if (point.y > TreeStart.CoordData.bottom)//Main NodeTree nodes
             {
-                TargetNode = RetrieveDataNodeByPoint(point);
+                RetrieveDataNodeByPoint(point);
                 if (TargetNode != nullptr) { ToggleNode(TargetNode, bInvalidate); FailedToFindNode = false; }
             }
             else
             {
-                TargetInfoNode = RetrieveInfoNodeByPoint(point);
+                RetrieveInfoNodeByPoint(point);
                 if (TargetInfoNode != nullptr) { ToggleNode(TargetInfoNode, bInvalidate); FailedToFindNode = false; }
             }
         }
@@ -363,6 +389,11 @@ public:
     }
 
 protected:
+    /// <summary>
+    /// Adds all sub nodes.
+    /// </summary>
+    /// <param name="pNode">The p node.</param>
+    /// <param name="TargetNodes">The target nodes.</param>
     void AddAllSubNodes(DataNode* pNode, UIntVector& TargetNodes)
     {
         DataNode* targetNode;
@@ -373,6 +404,12 @@ protected:
         }
     }
 
+    /// <summary>
+    /// Adds all sub nodes.
+    /// </summary>
+    /// <param name="pNode">The p node.</param>
+    /// <param name="TargetNodes">The target nodes.</param>
+    /// <param name="BankType">Type of the bank.</param>
     void AddAllSubNodes(InfoNode* pNode, UIntVector& TargetNodes, short BankType)
     {
         InfoNode* targetNode;
@@ -409,6 +446,11 @@ protected:
         }
     }
 
+    /// <summary>
+    /// Deletes the node.
+    /// </summary>
+    /// <param name="nodeIndex">Index of the node.</param>
+    /// <param name="bInvalidate">The b invalidate.</param>
     void DeleteNode(unsigned int nodeIndex, BOOL bInvalidate = FALSE)
     {
         UIntVector TargetNodes;
@@ -432,6 +474,12 @@ protected:
             Invalidate();
     }
 
+    /// <summary>
+    /// Deletes the information node.
+    /// </summary>
+    /// <param name="nodeIndex">Index of the node.</param>
+    /// <param name="BankType">Type of the bank.</param>
+    /// <param name="bInvalidate">The b invalidate.</param>
     void DeleteInfoNode(unsigned int nodeIndex, short BankType, BOOL bInvalidate = FALSE)
     {
         UIntVector TargetNodes;
@@ -516,6 +564,14 @@ protected:
             Invalidate();
     }
 
+    /// <summary>
+    /// Draws the nodes from root.
+    /// </summary>
+    /// <param name="pDC">The p dc.</param>
+    /// <param name="x">The x.</param>
+    /// <param name="y">The y.</param>
+    /// <param name="rFrame">The r frame.</param>
+    /// <returns>int.</returns>
     int DrawNodesFromRoot(CDC* pDC, int x, int y, CRect rFrame)
     {
         int		iDocHeight = 0;		// Total document height
@@ -620,6 +676,16 @@ protected:
         return iDocHeight;
     }
 
+    /// <summary>
+    /// Draws the tag content node.
+    /// </summary>
+    /// <param name="pDC">The p dc.</param>
+    /// <param name="pNode">The p node.</param>
+    /// <param name="x">The x.</param>
+    /// <param name="y">The y.</param>
+    /// <param name="rFrame">The r frame.</param>
+    /// <param name="iDocHeight">Height of the i document.</param>
+    /// <returns>int.</returns>
     template <typename NodeType>
     int DrawTagContentNode(CDC* pDC, NodeType* pNode, int x, int y, CRect rFrame, int iDocHeight)
     {
@@ -640,7 +706,6 @@ protected:
         // MULTILINE TEXT - begins
         CString nodeText = pNode->TagName.c_str();
         int		iPos;
-        int ArgSize;
 
         // Height of a line of text(All parts of Node at same height--limiting to single line nodes for now unless need to expand)
         rNode.bottom = rNode.top + m_iLineHeight;
@@ -768,6 +833,13 @@ protected:
                 for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     targetNode = &this->CharPropBank[*targetNodeIndex];
+                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 3);
+                }
+                break;
+            case 4:
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    targetNode = &this->LinkageBank[*targetNodeIndex];
                     iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 3);
                 }
                 break;

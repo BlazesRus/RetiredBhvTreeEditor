@@ -173,6 +173,7 @@
     <ClInclude Include="InfoDataDictionary.h" />
     <ClInclude Include="OrderedIndexDictionary.h" />
     <ClInclude Include="RootNode.h" />
+    <ClInclude Include="TagContentVector.h" />
     <ClInclude Include="TagDepthTree.h" />
     <ClInclude Include="TreeNodeText.h" />
     <ClInclude Include="UIntDic.h" />
