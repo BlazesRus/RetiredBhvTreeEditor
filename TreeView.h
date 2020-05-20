@@ -443,6 +443,20 @@ protected:
                 AddAllSubNodes(targetNode, TargetNodes, 3);
             }
             break;
+        case 4:
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->LinkageBank[*targetNodeIndex];
+                AddAllSubNodes(targetNode, TargetNodes, 4);
+            }
+            break;
+        case 5:
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->LinkedConditionBank[*targetNodeIndex];
+                AddAllSubNodes(targetNode, TargetNodes, 5);
+            }
+            break;
         }
     }
 
@@ -522,7 +536,7 @@ protected:
             for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetNode = &this->VariableBank[*targetNodeIndex];
-                AddAllSubNodes(targetNode, TargetNodes, 0);
+                AddAllSubNodes(targetNode, TargetNodes, 1);
             }
             for (UIntVector::iterator targetNodeIndex = TargetNodes.begin(), EndIndex = TargetNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
@@ -537,7 +551,7 @@ protected:
             for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetNode = &this->AttriNameBank[*targetNodeIndex];
-                AddAllSubNodes(targetNode, TargetNodes, 0);
+                AddAllSubNodes(targetNode, TargetNodes, 2);
             }
             for (UIntVector::iterator targetNodeIndex = TargetNodes.begin(), EndIndex = TargetNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
@@ -552,11 +566,41 @@ protected:
             for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetNode = &this->CharPropBank[*targetNodeIndex];
-                AddAllSubNodes(targetNode, TargetNodes, 0);
+                AddAllSubNodes(targetNode, TargetNodes, 3);
             }
             for (UIntVector::iterator targetNodeIndex = TargetNodes.begin(), EndIndex = TargetNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 CharPropBank.Remove(*targetNodeIndex);
+            }
+            break;
+        case 4:
+            if (pNode->ParentIndex == 0)
+            {
+                LinkageBank.RootNodes.DeleteFirstMatch(nodeIndex);
+            }
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->LinkageBank[*targetNodeIndex];
+                AddAllSubNodes(targetNode, TargetNodes, 4);
+            }
+            for (UIntVector::iterator targetNodeIndex = TargetNodes.begin(), EndIndex = TargetNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                LinkageBank.Remove(*targetNodeIndex);
+            }
+            break;
+        case 5:
+            if (pNode->ParentIndex == 0)
+            {
+                LinkedConditionBank.RootNodes.DeleteFirstMatch(nodeIndex);
+            }
+            for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                targetNode = &this->LinkedConditionBank[*targetNodeIndex];
+                AddAllSubNodes(targetNode, TargetNodes, 5);
+            }
+            for (UIntVector::iterator targetNodeIndex = TargetNodes.begin(), EndIndex = TargetNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                LinkedConditionBank.Remove(*targetNodeIndex);
             }
             break;
         }
@@ -812,35 +856,42 @@ protected:
                 for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     targetNode = &this->EventBank[*targetNodeIndex];
-                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 0);
+                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, m_iDocHeight, 0);
                 }
                 break;
             case 1:
                 for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     targetNode = &this->VariableBank[*targetNodeIndex];
-                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 1);
+                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, m_iDocHeight, 1);
                 }
                 break;
             case 2:
                 for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     targetNode = &this->AttriNameBank[*targetNodeIndex];
-                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 2);
+                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, m_iDocHeight, 2);
                 }
                 break;
             case 3:
                 for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     targetNode = &this->CharPropBank[*targetNodeIndex];
-                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 3);
+                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, m_iDocHeight, 3);
                 }
                 break;
             case 4:
                 for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     targetNode = &this->LinkageBank[*targetNodeIndex];
-                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, 3);
+                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, m_iDocHeight, 4);
+                }
+                break;
+            case 5:
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    targetNode = &this->LinkedConditionBank[*targetNodeIndex];
+                    iDocHeight = RecursivelyDrawInfoNodes(pDC, targetNode, x + m_iIndent, y + targetNode->CoordData.Height(), rFrame, m_iDocHeight, 5);
                 }
                 break;
             }
@@ -1024,6 +1075,20 @@ protected:
                     RecursivelyDrawLines(pDC, targetNode, 3);
                 }
                 break;
+            case 4:
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    targetNode = &this->LinkageBank[*targetNodeIndex];
+                    RecursivelyDrawLines(pDC, targetNode, 4);
+                }
+                break;
+            case 5:
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    targetNode = &this->LinkedConditionBank[*targetNodeIndex];
+                    RecursivelyDrawLines(pDC, targetNode, 5);
+                }
+                break;
             }
         }
         // Where is the elbow joint of this connecting line?
@@ -1044,6 +1109,10 @@ protected:
                 targetNode = &this->AttriNameBank[TargetIndex]; break;
             case 3:
                 targetNode = &this->CharPropBank[TargetIndex]; break;
+            case 4:
+                targetNode = &this->LinkageBank[TargetIndex]; break;
+            case 5:
+                targetNode = &this->LinkedConditionBank[TargetIndex]; break;
             }
 
             // How far up from the joint is the parent?
