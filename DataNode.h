@@ -43,6 +43,7 @@ class DataNode
     //0 = Default
 	//1 = ClassNode root
 	//2 = NonClassNode Level tag
+	//50 = hkparam named node with TagContent QuadVector format such as (1.000000 0.000000 0.000000 0.000000) ; Only numbers configurable
 	//-------Arg Data Stored as Separate nodes-------------------
 	//-------90 = Arg Field
 	//91 = Arg Element

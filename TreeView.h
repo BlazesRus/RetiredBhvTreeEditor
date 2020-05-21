@@ -903,17 +903,17 @@ protected:
     }
 
     /// <summary>
-    /// Draws clickable TagContentNode
+    /// Draws clickable TagContentNode(Returns X+iPos)
     /// </summary>
     /// <param name="pDC">The document pointer.</param>
-    /// <param name="pNode">The pointer of target node</param>
+    /// <param name="DataContent">Content of the data.</param>
     /// <param name="x">X position of node</param>
     /// <param name="y">Y position of node</param>
     /// <param name="rFrame">Frame Coordinates</param>
     /// <param name="iDocHeight">Total document height</param>
-    void DrawDataContentInfo(CDC* pDC, TagContent &DataContent, int x, int y, CRect rFrame, int iDocHeight)
+    /// <returns>int</returns>
+    int DrawDataContentInfo(CDC* pDC, TagContent& DataContent, int x, int y, CRect rFrame, int& iDocHeight)
     {
-        int		iDocHeight = 0;		// Total document height
         CRect	rNode;
 
         // The node's location and dimensions on screen
@@ -938,6 +938,11 @@ protected:
             pDC->DrawText(DataContent.Content.Left(iPos + 1), rNode, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
             DataContent.CoordData.CopyRect(rNode);
         }
+        else
+        {
+            return x;
+        }
+        return x+iPos;
     }
 
     /// <summary>
@@ -1028,8 +1033,51 @@ protected:
         }
         else if(ContentSize>1)
         {//Determine how to display by things like node-type, TagName etc
-            if(ContentSize=4)//Possible QuadVector type field
+            int XPos = x + iPos;
+            
+            if(pNode->NodeType==50)//QuadVector format hkparam variable such as(axisOfRotation)
             {
+                DrawTagContentInfo(pDC, "(", XPos, y, rFrame, iDocHeight); ++XPos;
+                XPos = DrawDataContentInfo(pDC, pNode->NodeContent[0], XPos, y, rFrame, iDocHeight);
+                XPos = DrawDataContentInfo(pDC, pNode->NodeContent[1], x + iPos, y, rFrame, iDocHeight);
+                XPos = DrawDataContentInfo(pDC, pNode->NodeContent[2], x + iPos, y, rFrame, iDocHeight);
+                XPos = DrawDataContentInfo(pDC, pNode->NodeContent[3], x + iPos, y, rFrame, iDocHeight);
+                DrawTagContentInfo(pDC, ")", XPos, y, rFrame, iDocHeight);
+            }
+            else if(pNode->NodeType == 51)//Multi-line QuadVector format
+            {
+                int XPosStart = XPos;
+                int RowPosition = 0;
+                DrawTagContentInfo(pDC, "(", XPos, y, rFrame, iDocHeight); ++XPos;
+                for (TagContentVector::iterator targetNodeIndex = pNode->NodeContent.begin(), EndIndex = pNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    if (RowPosition == 4)
+                    {
+                        DrawTagContentInfo(pDC, ")", XPos, y, rFrame, iDocHeight);
+                        XPos = XPosStart; y = y + pNode->CoordData.Height();
+                        iDocHeight += pNode->CoordData.Height();
+                        RowPosition = 0;
+                        DrawTagContentInfo(pDC, "(", XPos, y, rFrame, iDocHeight);
+                    }
+                    XPos = DrawDataContentInfo(pDC, *targetNodeIndex, XPos, y, rFrame, iDocHeight);
+                    ++RowPosition;
+                }
+            }
+            else
+            {
+                int XPosStart = XPos;
+                int RowPosition = 0;
+                for (TagContentVector::iterator targetNodeIndex = pNode->NodeContent.begin(), EndIndex = pNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    if(RowPosition==16)//Allow 16 Elements per line
+                    {
+                        XPos = XPosStart; y = y + pNode->CoordData.Height();
+                        iDocHeight += pNode->CoordData.Height();
+                        RowPosition = 0;
+                    }
+                    XPos = DrawDataContentInfo(pDC, *targetNodeIndex, XPos, y, rFrame, iDocHeight);
+                    ++RowPosition;
+                }
             }
         }
         if (pNode->ChildNodes.empty())
