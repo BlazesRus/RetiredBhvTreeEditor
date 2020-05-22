@@ -21,7 +21,7 @@ class DataNode
 	int ParentIndex;
 	
 	/// <summary>
-	/// The indexes of all child nodes
+	/// The indexes of all child nodes (Is closed tag if has no children)
 	/// </summary>
 	UIntVector ChildNodes;
 
@@ -43,6 +43,8 @@ class DataNode
     //0 = Default
 	//1 = ClassNode root
 	//2 = NonClassNode Level tag
+	//3 = XMLVersion tag likely as <?xml version="1.0" encoding="ascii"?>
+	//4 = hkpackfile tag with toplevelobject arg (normally second tag in .bhv file) (save first found to linked key "hkpackfile")
 	//50 = hkparam named node with TagContent QuadVector format such as (1.000000 0.000000 0.000000 0.000000) ; Only numbers configurable
 	//-------Arg Data Stored as Separate nodes-------------------
 	//-------90 = Arg Field

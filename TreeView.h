@@ -155,10 +155,40 @@ protected:
     /// </summary>
     RootNode LinkedConditionStart = "Linked Condition Tree";
 
+    /// <summary>
+    /// Toggle forces regeneration of linked event class Linked Node children(switch on when variable changed from EventDataStart children) 
+    /// </summary>
+    bool RegenerateEventLinks = false;
+    //Holds data of Name from hkbBehaviorGraphStringData(Event & Variable Names)
+    std::string StringDataName = "";
+    /// <summary>
+    /// Toggle forces regeneration of linked variable class Linked Node children(switch on when variable changed from VariableDataStart children) 
+    /// </summary>
+    bool RegenerateVariableLinks = false;
+    //Holds data of Name from hkbVariableValueSet (Variable Values)
+    std::string ValueDataName = "";
+    //Holds data of Name from hkbBehaviorGraphData (Variable Types)
+    std::string TypeDataName = "";
+    //Holds name of variableInitialValues class that stores link to Hk class of type hkbVariableValueSet
+    std::string variableInitialValues;
+    //Stores link to Hk class of type hkbBehaviorGraphStringData
+    std::string stringData;
+
+    /* Don't really need to store information about other rarely edited fields since going to store the full hkclasses instead
+    //Holds data of Signature from hkbVariableValueSet (Variable Values)
+    std::string ValueDataSignature = "";
+    //Holds data of Signature from hkbBehaviorGraphData (Variable Types)
+    std::string TypeDataSignature = "";
+    //Holds data of Signature from hkbBehaviorGraphStringData(Event & Variable Names)
+    std::string StringDataSignature = "";
+    //Typically 4 Element Array of what seems to be coordinate positions
+    QuadVectorList quadVariableValues;
+    */
+
     //
-/// <summary>
-/// The node type found (1 = RootNode; 2 = InfoNode; 3 = DataNode)(Node Info for Message Handlers)
-/// </summary>
+    /// <summary>
+    /// The node type found (0=No Selectable Nodes found;1 = RootNode; 2 = InfoNode; 3 = DataNode)(Node Info for Message Handlers)
+    /// </summary>
     short NodeTypeFound = 0;
     /// <summary>
     /// The bank type(0=EventData;1=VariableData;3=AttriNameData;4=CharacterPropertyData;5=NodeLinkageData)
@@ -185,26 +215,6 @@ protected:
     unsigned int ClassNodeStart = 0;
     short NodeSearchRange = 0;
 
-    //Holds data of Name from hkbBehaviorGraphStringData(Event & Variable Names)
-    std::string StringDataName = "";
-    //Holds data of Signature from hkbBehaviorGraphStringData(Event & Variable Names)
-    std::string StringDataSignature = "";
-    //Holds data of Name from hkbVariableValueSet (Variable Values)
-    std::string ValueDataName = "";
-    //Holds data of Signature from hkbVariableValueSet (Variable Values)
-    std::string ValueDataSignature = "";
-    //Holds data of Name from hkbBehaviorGraphData (Variable Types)
-    std::string TypeDataName = "";
-    //Holds data of Signature from hkbBehaviorGraphData (Variable Types)
-    std::string TypeDataSignature = "";
-
-    //Stores link to Hk class of type hkbVariableValueSet
-    std::string variableInitialValues;
-    //Stores link to Hk class of type hkbBehaviorGraphStringData
-    std::string stringData;
-
-    //Typically 4 Element Array of what seems to be coordinate positions
-    QuadVectorList quadVariableValues;
 //-------File Loading Operations-------------------------------------------------------
 
     /// <summary>
@@ -220,7 +230,14 @@ protected:
     /// <param name="FilePath">The file path.</param>
     void SaveDataToFile(std::string FilePath)
     {
-
+        const std::string Tab = "    ";
+        DataNode* targetNode;
+        
+        for (UIntVector::iterator CurrentVal = RootNodes.begin(), LastVal = RootNodes.end(); CurrentVal != LastVal; ++CurrentVal)
+        {
+            targetNode = &NodeBank[*CurrentVal];
+            //iDocHeight = RecursivelyDrawNodes(pDC, targetNode, RootEnd, y + rNode.Height(), rFrame);
+        }
     }
 
 //--------------------------------------------------------------------------------------
