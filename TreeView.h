@@ -40,7 +40,25 @@ static char THIS_FILE[] = __FILE__;
 /// <seealso cref="CView" />
 class TreeView : public CView
 {
+private:
     DECLARE_DYNCREATE(TreeView)
+	void CreateFileIfDoesntExist(std::string FileName)
+	{
+		bool FileExists = false;
+		//Based on https://www.quora.com/What-is-the-best-way-to-check-whether-a-particular-file-exists-or-not-in-C++
+		struct stat buffer;
+		FileExists = (stat(FileName.c_str(), &buffer) == 0);
+		//Based on http://stackoverflow.com/questions/17818099/how-to-check-if-a-file-exists-before-creating-a-new-file
+		if(!FileExists)
+		{
+			std::ofstream file(FileName);
+			if(!file)
+			{
+				std::cout << "File could not be created" << std::endl;
+				return;
+			}
+		}
+	}
 public:// Construction
 
     /// <summary>
@@ -233,11 +251,36 @@ protected:
         const std::string Tab = "    ";
         DataNode* targetNode;
         
-        for (UIntVector::iterator CurrentVal = RootNodes.begin(), LastVal = RootNodes.end(); CurrentVal != LastVal; ++CurrentVal)
-        {
-            targetNode = &NodeBank[*CurrentVal];
-            //iDocHeight = RecursivelyDrawNodes(pDC, targetNode, RootEnd, y + rNode.Height(), rFrame);
-        }
+		size_t StringLength;
+		char StringChar;
+		std::string LineString;
+		std::fstream LoadedFileStream;
+		//Fix for non-existing file
+		CreateFileIfDoesntExist(FileName);
+		LoadedFileStream.open(FileName.c_str(), std::fstream::out | std::fstream::trunc);
+		if(LoadedFileStream.is_open())
+		{
+			if(LoadedFileStream.good())
+			{//Saving to file now
+				for (UIntVector::iterator CurrentVal = RootNodes.begin(), LastVal = RootNodes.end(); CurrentVal != LastVal; ++CurrentVal)
+				{
+					targetNode = &NodeBank[*CurrentVal];
+					//iDocHeight = RecursivelyDrawNodes(pDC, targetNode, RootEnd, y + rNode.Height(), rFrame);
+				}
+			}
+			else
+			{
+				if(LoadedFileStream.bad()) { std::cout << "Failed Read/Write operation Error!\n"; }
+				else if(LoadedFileStream.fail()) { std::cout << "Failed format based Error!\n"; }
+				else if(LoadedFileStream.bad()) { std::cout << "Failed Read/Write operation Error!\n"; }
+				else if(LoadedFileStream.eof()) {/*Send debug message of reaching end of file?*/ }
+			}
+			LoadedFileStream.close();
+		}
+		else
+		{
+			cout << "Failed to open " << FileName << ".\n";
+		}
     }
 
 //--------------------------------------------------------------------------------------
