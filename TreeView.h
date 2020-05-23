@@ -243,21 +243,22 @@ protected:
     bool LoadDataFromFile(std::string FilePath);
 
     /// <summary>
-    /// Saves the loaded data to file.
+    /// Saves the loaded data to file. (if / or \ is last character, will instead append BhvFile.xml)
     /// </summary>
-    /// <param name="FilePath">The file path.</param>
+    /// <param name="FilePath">The file path. or file name </param>
     void SaveDataToFile(std::string FilePath)
     {
         const std::string Tab = "    ";
         DataNode* targetNode;
         
+        if (FilePath.back() == '/' || FilePath.back() == '\\'){ FilePath += "BhvFile.xml"; }
 		size_t StringLength;
 		char StringChar;
 		std::string LineString;
 		std::fstream LoadedFileStream;
 		//Fix for non-existing file
-		CreateFileIfDoesntExist(FileName);
-		LoadedFileStream.open(FileName.c_str(), std::fstream::out | std::fstream::trunc);
+		CreateFileIfDoesntExist(FilePath);
+		LoadedFileStream.open(FilePath.c_str(), std::fstream::out | std::fstream::trunc);
 		if(LoadedFileStream.is_open())
 		{
 			if(LoadedFileStream.good())
@@ -279,7 +280,7 @@ protected:
 		}
 		else
 		{
-			cout << "Failed to open " << FileName << ".\n";
+			std::cout << "Failed to open " << FilePath << ".\n";
 		}
     }
 
