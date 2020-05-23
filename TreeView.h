@@ -287,6 +287,7 @@ protected:
                     childNode = &NodeBank[*childNodeIndex];
                     ResursivelySavingToFile(LoadedFileStream, childNode, TabLevel + 1);
                 }
+                LoadedFileStream << "\n";
                 if (TabLevel != 0)
                 {
                     LoadedFileStream << CreateWhitespace(TabLevel);
@@ -307,14 +308,14 @@ protected:
             else if (targetNode->NodeType == 51)//Multi-line QuadVector format
             {
                 int RowPosition = 0;
-                LoadedFileStream << CreateWhitespace(TabLevel + 1) << "(";
+                LoadedFileStream << "\n"<<CreateWhitespace(TabLevel + 1) << "(";
                 for (TagContentVector::iterator targetNodeIndex = targetNode->NodeContent.begin(), EndIndex = targetNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     if (RowPosition == 4)
                     {
                         LoadedFileStream << ")\n";
                         RowPosition = 0;
-                        LoadedFileStream << "    (";
+                        LoadedFileStream << CreateWhitespace(TabLevel + 1) << "(";
                     }
                     else if (RowPosition != 0) { LoadedFileStream << " "; }
                     LoadedFileStream << *targetNodeIndex->Content;
@@ -324,6 +325,7 @@ protected:
             else
             {
                 int RowPosition = 0;
+                LoadedFileStream << "\n" << CreateWhitespace(TabLevel + 1);
                 for (TagContentVector::iterator targetNodeIndex = targetNode->NodeContent.begin(), EndIndex = targetNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     if (RowPosition == 16)//Allow 16 Elements per line
@@ -388,9 +390,22 @@ protected:
                                 LoadedFileStream <<"=\""<<ArgElement.value[0]<<"\"";
                             }
                         }
-                        if(targetNode->NodeContent.empty())
+                        if (targetNode->NodeContent.empty())
                         {
-                            LoadedFileStream << "/>";
+                            if (targetNode->ChildNodes.empty())
+                            {
+                                LoadedFileStream << "/>";
+                            }
+                            else
+                            {//Writing ChildNodes to file
+                                DataNode* childNode = nullptr;
+                                for (UIntVector::iterator childNodeIndex = targetNode->ChildNodes.begin(), EndIndex = targetNode->ChildNodes.end(); childNodeIndex != EndIndex; ++childNodeIndex)
+                                {
+                                    childNode = &NodeBank[*childNodeIndex];
+                                    ResursivelySavingToFile(LoadedFileStream, childNode, 1);
+                                }
+                                LoadedFileStream << "\n</" << targetNode->TagName << ">";
+                            }
                         }
                         else if(targetNode->NodeContent.size()==1)
                         {
@@ -405,7 +420,7 @@ protected:
                             else if (targetNode->NodeType == 51)//Multi-line QuadVector format
                             {
                                 int RowPosition = 0;
-                                LoadedFileStream << "    (";
+                                LoadedFileStream << "\n    (";
                                 for (TagContentVector::iterator targetNodeIndex = targetNode->NodeContent.begin(), EndIndex = targetNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
                                 {
                                     if (RowPosition == 4)
@@ -422,6 +437,7 @@ protected:
                             else
                             {
                                 int RowPosition = 0;
+                                LoadedFileStream << "\n    ";
                                 for (TagContentVector::iterator targetNodeIndex = targetNode->NodeContent.begin(), EndIndex = targetNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
                                 {
                                     if (RowPosition == 16)//Allow 16 Elements per line
