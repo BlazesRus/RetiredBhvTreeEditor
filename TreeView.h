@@ -44,8 +44,12 @@ private:
     DECLARE_DYNCREATE(TreeView)
     std::string CreateWhitespace(int TabLevel)
     {
+        const std::string Tab = "    ";
         std::string TabBuffer="";
-        
+        for(int Index=0;Index<TabLevel;++TabLevel)
+        {
+            TabBuffer += Tab;
+        }
         return TabBuffer;
     }
     void CreateFileIfDoesntExist(std::string FileName)
@@ -348,7 +352,6 @@ protected:
     /// <param name="FilePath">The file path. or file name </param>
     void SaveDataToFile(std::string FilePath)
     {
-        const std::string Tab = "    ";
         //int TabLevel=0;
         DataNode* targetNode;
         
