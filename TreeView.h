@@ -248,9 +248,96 @@ protected:
     /// <returns>bool</returns>
     bool LoadDataFromFile(std::string FilePath);
 
-    void ResursivelySavingToFile(std::fstream& LoadedFileStream, DataNode* targetNode, int TabLevel=0)
+    void ResursivelySavingToFile(std::fstream& LoadedFileStream, DataNode* targetNode, int TabLevel = 0)
     {
-    
+        if (TabLevel != 0)
+        {
+            LoadedFileStream << CreateWhitespace(TabLevel);
+        }
+        LoadedFileStream << "<" << targetNode->TagName;
+        size_t NumberArgs;
+        for (ArgList::iterator ArgElement = targetNode->ArgData.begin(), EndElement = targetNode->ArgData.end(); ArgElement != EndElement; ++ArgElement)
+        {
+            NumberArgs = ArgElement.value.size();
+            LoadedFileStream << " " << ArgElement.key;
+            if (NumberArgs == 0)//Non-Value Element
+            {
+            }
+            else if (NumberArgs > 1)//MultiValue element
+            {
+
+            }
+            else//SingleValue Element
+            {
+                LoadedFileStream << "=\"" << ArgElement.value[0] << "\"";
+            }
+        }
+        //Writing TagContent and ChildNodes to file
+        if (targetNode->NodeContent.empty())
+        {//Going to assume those with tag content aren't going to have child nodes for now
+            if (targetNode->ChildNodes.empty())
+            {
+                LoadedFileStream << "/>";
+            }
+            else
+            {//Writing ChildNodes to file
+                DataNode* childNode = nullptr;
+                for (UIntVector::iterator childNodeIndex = targetNode->ChildNodes.begin(), EndIndex = targetNode->ChildNodes.end(); childNodeIndex != EndIndex; ++childNodeIndex)
+                {
+                    childNode = &NodeBank[*childNodeIndex];
+                    ResursivelySavingToFile(LoadedFileStream, childNode, TabLevel + 1);
+                }
+                if (TabLevel != 0)
+                {
+                    LoadedFileStream << CreateWhitespace(TabLevel);
+                }
+                LoadedFileStream << "</" << targetNode->TagName << ">";
+            }
+        }
+        else if (targetNode->NodeContent.size() == 1)
+        {
+            LoadedFileStream << targetNode->NodeContent[0].Content << "<" << targetNode->TagName << "/>";
+        }
+        else
+        {
+            if (targetNode->NodeType == 50)//QuadVector format hkparam variable such as(axisOfRotation)
+            {
+                LoadedFileStream << "(" << targetNode->NodeContent[0].Content << " " << targetNode->NodeContent[1].Content << " " << targetNode->NodeContent[2].Content << " " << targetNode->NodeContent[3].Content << ")";
+            }
+            else if (targetNode->NodeType == 51)//Multi-line QuadVector format
+            {
+                int RowPosition = 0;
+                LoadedFileStream << CreateWhitespace(TabLevel + 1) << "(";
+                for (TagContentVector::iterator targetNodeIndex = targetNode->NodeContent.begin(), EndIndex = targetNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    if (RowPosition == 4)
+                    {
+                        LoadedFileStream << ")\n";
+                        RowPosition = 0;
+                        LoadedFileStream << "    (";
+                    }
+                    else if (RowPosition != 0) { LoadedFileStream << " "; }
+                    LoadedFileStream << *targetNodeIndex->Content;
+                    ++RowPosition;
+                }
+            }
+            else
+            {
+                int RowPosition = 0;
+                for (TagContentVector::iterator targetNodeIndex = targetNode->NodeContent.begin(), EndIndex = targetNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    if (RowPosition == 16)//Allow 16 Elements per line
+                    {
+                        LoadedFileStream << "\n";
+                        RowPosition = 0;
+                    }
+                    else if (RowPosition != 0) { LoadedFileStream << " "; }
+                    LoadedFileStream << *targetNodeIndex->Content;
+                    ++RowPosition;
+                }
+            }
+            LoadedFileStream << "<" << targetNode->TagName << "/>";
+        }
     }
     
     /// <summary>
@@ -301,6 +388,54 @@ protected:
                                 LoadedFileStream <<"=\""<<ArgElement.value[0]<<"\"";
                             }
                         }
+                        if(targetNode->NodeContent.empty())
+                        {
+                            LoadedFileStream << "/>";
+                        }
+                        else if(targetNode->NodeContent.size()==1)
+                        {
+                            LoadedFileStream << targetNode->NodeContent[0].Content<<"<" <<targetNode->TagName<< "/>";
+                        }
+                        else
+                        {
+                            if (targetNode->NodeType == 50)//QuadVector format hkparam variable such as(axisOfRotation)
+                            {
+                                LoadedFileStream << "(" << targetNode->NodeContent[0].Content << " " << targetNode->NodeContent[1].Content << " " << targetNode->NodeContent[2].Content << " " << targetNode->NodeContent[3].Content << ")";
+                            }
+                            else if (targetNode->NodeType == 51)//Multi-line QuadVector format
+                            {
+                                int RowPosition = 0;
+                                LoadedFileStream << "    (";
+                                for (TagContentVector::iterator targetNodeIndex = targetNode->NodeContent.begin(), EndIndex = targetNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                                {
+                                    if (RowPosition == 4)
+                                    {
+                                        LoadedFileStream << ")\n";
+                                        RowPosition = 0;
+                                        LoadedFileStream << "    (";
+                                    }
+                                    else if (RowPosition != 0) { LoadedFileStream << " "; }
+                                    LoadedFileStream << *targetNodeIndex->Content;
+                                    ++RowPosition;
+                                }
+                            }
+                            else
+                            {
+                                int RowPosition = 0;
+                                for (TagContentVector::iterator targetNodeIndex = targetNode->NodeContent.begin(), EndIndex = targetNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                                {
+                                    if (RowPosition == 16)//Allow 16 Elements per line
+                                    {
+                                        LoadedFileStream << "\n";
+                                        RowPosition = 0;
+                                    }
+                                    else if (RowPosition != 0) { LoadedFileStream << " "; }
+                                    LoadedFileStream << *targetNodeIndex->Content;
+                                    ++RowPosition;
+                                }
+                            }
+                            LoadedFileStream << "<" << targetNode->TagName << "/>";
+                        }
                     }
                 }
                 else
@@ -317,13 +452,11 @@ protected:
                     LoadedFileStream << "<";
                     if(targetNode->ChildNodes.empty())//Closed Tag
                     {
+
                     }
                     else
                     {
-                        ResursivelySavingToFile(&LoadedFileStream, targetNode);
-                        //++TabLevel;
-                        //LoadedFileStream << "\n";
-                        //LoadedFileStream << CreateWhitespace(TabLevel) << "<";
+                        ResursivelySavingToFile(LoadedFileStream, targetNode);
                     }
                     //iDocHeight = RecursivelyDrawNodes(pDC, targetNode, RootEnd, y + rNode.Height(), rFrame);
                 }
