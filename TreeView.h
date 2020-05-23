@@ -42,29 +42,29 @@ class TreeView : public CView
 {
 private:
     DECLARE_DYNCREATE(TreeView)
-	std::string CreateWhitespace(int TabLevel)
-	{
-		std::string TabBuffer="";
-		
-		return TabBuffer;
-	}
-	void CreateFileIfDoesntExist(std::string FileName)
-	{
-		bool FileExists = false;
-		//Based on https://www.quora.com/What-is-the-best-way-to-check-whether-a-particular-file-exists-or-not-in-C++
-		struct stat buffer;
-		FileExists = (stat(FileName.c_str(), &buffer) == 0);
-		//Based on http://stackoverflow.com/questions/17818099/how-to-check-if-a-file-exists-before-creating-a-new-file
-		if(!FileExists)
-		{
-			std::ofstream file(FileName);
-			if(!file)
-			{
-				std::cout << "File could not be created" << std::endl;
-				return;
-			}
-		}
-	}
+    std::string CreateWhitespace(int TabLevel)
+    {
+        std::string TabBuffer="";
+        
+        return TabBuffer;
+    }
+    void CreateFileIfDoesntExist(std::string FileName)
+    {
+        bool FileExists = false;
+        //Based on https://www.quora.com/What-is-the-best-way-to-check-whether-a-particular-file-exists-or-not-in-C++
+        struct stat buffer;
+        FileExists = (stat(FileName.c_str(), &buffer) == 0);
+        //Based on http://stackoverflow.com/questions/17818099/how-to-check-if-a-file-exists-before-creating-a-new-file
+        if(!FileExists)
+        {
+            std::ofstream file(FileName);
+            if(!file)
+            {
+                std::cout << "File could not be created" << std::endl;
+                return;
+            }
+        }
+    }
 public:// Construction
 
     /// <summary>
@@ -248,11 +248,11 @@ protected:
     /// <returns>bool</returns>
     bool LoadDataFromFile(std::string FilePath);
 
-	void ResursivelySavingToFile(LoadedFileStream& LoadedFileStream, DataNode* targetNode, int TabLevel=0)
-	{
-	
-	}
-	
+    void ResursivelySavingToFile(std::fstream& LoadedFileStream, DataNode* targetNode, int TabLevel=0)
+    {
+    
+    }
+    
     /// <summary>
     /// Saves the loaded data to file. (if / or \ is last character, will instead append BhvFile.xml)
     /// </summary>
@@ -260,87 +260,87 @@ protected:
     void SaveDataToFile(std::string FilePath)
     {
         const std::string Tab = "    ";
-		//int TabLevel=0;
+        //int TabLevel=0;
         DataNode* targetNode;
         
         if (FilePath.back() == '/' || FilePath.back() == '\\'){ FilePath += "BhvFile.xml"; }
-		size_t StringLength;
-		char StringChar;
-		std::string LineString;
-		std::fstream LoadedFileStream;
-		//Fix for non-existing file
-		CreateFileIfDoesntExist(FilePath);
-		LoadedFileStream.open(FilePath.c_str(), std::fstream::out | std::fstream::trunc);
-		if(LoadedFileStream.is_open())
-		{
-			if(LoadedFileStream.good())
-			{//Saving to file now
-				UIntVector::iterator CurrentVal = RootNodes.begin();
-					targetNode = &NodeBank[*CurrentVal];
-					if(targetNode->ChildNodes.empty())//Closed Tag
-					{
-						if(targetNode->NodeType==3)
-						{
-							LoadedFileStream << "<?xml version=\"1.0\" encoding=\"ascii\"?>";
-						}
-						else
-						{
-							LoadedFileStream << "<"<<targetNode->TagName;
-							size_t NumberArgs;
-							for(ArgList::iterator ArgElement = targetNode->ArgData.begin(), EndElement = targetNode->ArgData.end(); ArgElement != EndElement; ++ArgElement)
-							{
-								NumberArgs = ArgElement.value.size();
-								LoadedFileStream <<" "<<ArgElement.key;
-								if (NumberArgs == 0)//Non-Value Element
-								{} else if(NumberArgs>1)//MultiValue element
-								{
-								
-								}
-								else//SingleValue Element
-								{
-									LoadedFileStream <<"=\""<<ArgElement.value[0]<<"\"";
-								}
-							}
-						}
-					}
-					else
-					{
+        size_t StringLength;
+        char StringChar;
+        std::string LineString;
+        std::fstream LoadedFileStream;
+        //Fix for non-existing file
+        CreateFileIfDoesntExist(FilePath);
+        LoadedFileStream.open(FilePath.c_str(), std::fstream::out | std::fstream::trunc);
+        if(LoadedFileStream.is_open())
+        {
+            if(LoadedFileStream.good())
+            {//Saving to file now
+                UIntVector::iterator CurrentVal = RootNodes.begin();
+                targetNode = &NodeBank[*CurrentVal];
+                if(targetNode->ChildNodes.empty())//Closed Tag
+                {
+                    if(targetNode->NodeType==3)
+                    {
+                        LoadedFileStream << "<?xml version=\"1.0\" encoding=\"ascii\"?>";
+                    }
+                    else
+                    {
+                        LoadedFileStream << "<"<<targetNode->TagName;
+                        size_t NumberArgs;
+                        for(ArgList::iterator ArgElement = targetNode->ArgData.begin(), EndElement = targetNode->ArgData.end(); ArgElement != EndElement; ++ArgElement)
+                        {
+                            NumberArgs = ArgElement.value.size();
+                            LoadedFileStream <<" "<<ArgElement.key;
+                            if (NumberArgs == 0)//Non-Value Element
+                            {} else if(NumberArgs>1)//MultiValue element
+                            {
+                                
+                            }
+                            else//SingleValue Element
+                            {
+                                LoadedFileStream <<"=\""<<ArgElement.value[0]<<"\"";
+                            }
+                        }
+                    }
+                }
+                else
+                {
 
-					}
-				++CurrentVal;//
-				for (LastVal = RootNodes.end(); CurrentVal != LastVal; ++CurrentVal)
-				{
-					//Carriage Return to next line
-					LoadedFileStream << "\n";
-					
-					targetNode = &NodeBank[*CurrentVal];
-					LoadedFileStream << "<";
-					if(targetNode->ChildNodes.empty())//Closed Tag
-					{
-					}
-					else
-					{
-						ResursivelySavingToFile(&LoadedFileStream, targetNode);
-						//++TabLevel;
-						//LoadedFileStream << "\n";
-						//LoadedFileStream << CreateWhitespace(TabLevel) << "<";
-					}
-					//iDocHeight = RecursivelyDrawNodes(pDC, targetNode, RootEnd, y + rNode.Height(), rFrame);
-				}
-			}
-			else
-			{
-				if(LoadedFileStream.bad()) { std::cout << "Failed Read/Write operation Error!\n"; }
-				else if(LoadedFileStream.fail()) { std::cout << "Failed format based Error!\n"; }
-				else if(LoadedFileStream.bad()) { std::cout << "Failed Read/Write operation Error!\n"; }
-				else if(LoadedFileStream.eof()) {/*Send debug message of reaching end of file?*/ }
-			}
-			LoadedFileStream.close();
-		}
-		else
-		{
-			std::cout << "Failed to open " << FilePath << ".\n";
-		}
+                }
+                ++CurrentVal;
+                for (UIntVector::iterator LastVal = RootNodes.end(); CurrentVal != LastVal; ++CurrentVal)
+                {
+                    //Carriage Return to next line
+                    LoadedFileStream << "\n";
+                    
+                    targetNode = &NodeBank[*CurrentVal];
+                    LoadedFileStream << "<";
+                    if(targetNode->ChildNodes.empty())//Closed Tag
+                    {
+                    }
+                    else
+                    {
+                        ResursivelySavingToFile(&LoadedFileStream, targetNode);
+                        //++TabLevel;
+                        //LoadedFileStream << "\n";
+                        //LoadedFileStream << CreateWhitespace(TabLevel) << "<";
+                    }
+                    //iDocHeight = RecursivelyDrawNodes(pDC, targetNode, RootEnd, y + rNode.Height(), rFrame);
+                }
+            }
+            else
+            {
+                if(LoadedFileStream.bad()) { std::cout << "Failed Read/Write operation Error!\n"; }
+                else if(LoadedFileStream.fail()) { std::cout << "Failed format based Error!\n"; }
+                else if(LoadedFileStream.bad()) { std::cout << "Failed Read/Write operation Error!\n"; }
+                else if(LoadedFileStream.eof()) {/*Send debug message of reaching end of file?*/ }
+            }
+            LoadedFileStream.close();
+        }
+        else
+        {
+            std::cout << "Failed to open " << FilePath << ".\n";
+        }
     }
 
 //--------------------------------------------------------------------------------------
@@ -1251,8 +1251,8 @@ protected:
     /// <param name="pDC">The document pointer</param>
     void DrawLinesFromRoot(CDC* pDC)
     {
-		InfoNode* targetInfoNode = nullptr;
-		DataNode* targetInfoNode = nullptr;
+        InfoNode* targetInfoNode = nullptr;
+        DataNode* targetInfoNode = nullptr;
     }
 
     /// <summary>
@@ -1544,27 +1544,27 @@ protected:
 
     void RetrieveDataNodeByPoint(CPoint point)
     {
-	
-	}
+    
+    }
 
     void RetrieveNodeByPoint(CPoint point)
     {
         if (point.x < RootEnd)//Search for RootNode nearest to point
         {
             TargetRootNode = RetrieveNearestRootNode(point);
-			NodeTypeFound = 1;
+            NodeTypeFound = 1;
         }
         else
         {
             if (point.y > TreeStart.CoordData.bottom)//Main NodeTree nodes
             {
                 TargetNode = RetrieveDataNodeByPoint(point);
-				NodeTypeFound = 3;
+                NodeTypeFound = 3;
             }
             else
             {
                 TargetInfoNode = RetrieveInfoNodeByPoint(point);
-				NodeTypeFound = 2;
+                NodeTypeFound = 2;
             }
         }
     }
@@ -1574,54 +1574,54 @@ protected:
 
     }
     // Message handlers
-	void OnCM_DeleteNode()
-	{
-		//DeleteNode(m_pSelected, TRUE);
-	}
-	void OnCM_ModifyNodeText()
-	{
+    void OnCM_DeleteNode()
+    {
+        //DeleteNode(m_pSelected, TRUE);
+    }
+    void OnCM_ModifyNodeText()
+    {
 /*		if (NodeTextDlg(m_pSelected->DisplayName) == TRUE)
-		{
-			Invalidate();
-		}*/
-	}
+        {
+            Invalidate();
+        }*/
+    }
 
-	//void OnCM_ToggleConnectingLines()
-	//{
-	//	m_bShowLines = !m_bShowLines;
+    //void OnCM_ToggleConnectingLines()
+    //{
+    //	m_bShowLines = !m_bShowLines;
 
-	//	Invalidate();
-	//}
-	//void OnCM_SetConnectingLinesColor()
-	//{
-	//	CColorDialog ccd(m_crConnectingLines, CC_FULLOPEN | CC_ANYCOLOR);
+    //	Invalidate();
+    //}
+    //void OnCM_SetConnectingLinesColor()
+    //{
+    //	CColorDialog ccd(m_crConnectingLines, CC_FULLOPEN | CC_ANYCOLOR);
 
-	//	if (ccd.DoModal() == IDOK)
-	//	{
-	//		m_crConnectingLines = ccd.GetColor();
-	//		Invalidate();
-	//	}
-	//}
-	//void OnCM_SetFont()
-	//{
-	//	CFontDialog cfd(&m_lgFont, CF_SCREENFONTS | CF_INITTOLOGFONTSTRUCT);
+    //	if (ccd.DoModal() == IDOK)
+    //	{
+    //		m_crConnectingLines = ccd.GetColor();
+    //		Invalidate();
+    //	}
+    //}
+    //void OnCM_SetFont()
+    //{
+    //	CFontDialog cfd(&m_lgFont, CF_SCREENFONTS | CF_INITTOLOGFONTSTRUCT);
 
-	//	if (cfd.DoModal() == IDOK)
-	//	{
-	//		SetTextFont(cfd.GetSize() / 10, cfd.IsBold(), cfd.IsItalic(), cfd.GetFaceName());
-	//		Invalidate();
-	//	}
-	//}
-	//void OnCM_SetDefaultColor()
-	//{
-	//	CColorDialog ccd(m_crDefaultTextColor, CC_FULLOPEN | CC_ANYCOLOR);
+    //	if (cfd.DoModal() == IDOK)
+    //	{
+    //		SetTextFont(cfd.GetSize() / 10, cfd.IsBold(), cfd.IsItalic(), cfd.GetFaceName());
+    //		Invalidate();
+    //	}
+    //}
+    //void OnCM_SetDefaultColor()
+    //{
+    //	CColorDialog ccd(m_crDefaultTextColor, CC_FULLOPEN | CC_ANYCOLOR);
 
-	//	if (ccd.DoModal() == IDOK)
-	//	{
-	//		m_crDefaultTextColor = ccd.GetColor();
-	//		Invalidate();
-	//	}
-	//}
+    //	if (ccd.DoModal() == IDOK)
+    //	{
+    //		m_crDefaultTextColor = ccd.GetColor();
+    //		Invalidate();
+    //	}
+    //}
 
     // Overrides
     // ClassWizard generated virtual function overrides
