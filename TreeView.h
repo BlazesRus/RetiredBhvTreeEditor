@@ -42,6 +42,12 @@ class TreeView : public CView
 {
 private:
     DECLARE_DYNCREATE(TreeView)
+	std::string CreateWhitespace(int TabLevel)
+	{
+		std::string TabBuffer="";
+		
+		return TabBuffer;
+	}
 	void CreateFileIfDoesntExist(std::string FileName)
 	{
 		bool FileExists = false;
@@ -242,6 +248,11 @@ protected:
     /// <returns>bool</returns>
     bool LoadDataFromFile(std::string FilePath);
 
+	void ResursivelySavingToFile(LoadedFileStream& LoadedFileStream, DataNode* targetNode, int TabLevel=0)
+	{
+	
+	}
+	
     /// <summary>
     /// Saves the loaded data to file. (if / or \ is last character, will instead append BhvFile.xml)
     /// </summary>
@@ -249,6 +260,7 @@ protected:
     void SaveDataToFile(std::string FilePath)
     {
         const std::string Tab = "    ";
+		//int TabLevel=0;
         DataNode* targetNode;
         
         if (FilePath.back() == '/' || FilePath.back() == '\\'){ FilePath += "BhvFile.xml"; }
@@ -263,9 +275,56 @@ protected:
 		{
 			if(LoadedFileStream.good())
 			{//Saving to file now
-				for (UIntVector::iterator CurrentVal = RootNodes.begin(), LastVal = RootNodes.end(); CurrentVal != LastVal; ++CurrentVal)
-				{
+				UIntVector::iterator CurrentVal = RootNodes.begin();
 					targetNode = &NodeBank[*CurrentVal];
+					if(targetNode->ChildNodes.empty())//Closed Tag
+					{
+						if(targetNode->NodeType==3)
+						{
+							LoadedFileStream << "<?xml version=\"1.0\" encoding=\"ascii\"?>";
+						}
+						else
+						{
+							LoadedFileStream << "<"<<targetNode->TagName;
+							size_t NumberArgs;
+							for(ArgList::iterator ArgElement = targetNode->ArgData.begin(), EndElement = targetNode->ArgData.end(); ArgElement != EndElement; ++ArgElement)
+							{
+								NumberArgs = ArgElement.value.size();
+								LoadedFileStream <<" "<<ArgElement.key;
+								if (NumberArgs == 0)//Non-Value Element
+								{} else if(NumberArgs>1)//MultiValue element
+								{
+								
+								}
+								else//SingleValue Element
+								{
+									LoadedFileStream <<"=\""<<ArgElement.value[0]<<"\"";
+								}
+							}
+						}
+					}
+					else
+					{
+
+					}
+				++CurrentVal;//
+				for (LastVal = RootNodes.end(); CurrentVal != LastVal; ++CurrentVal)
+				{
+					//Carriage Return to next line
+					LoadedFileStream << "\n";
+					
+					targetNode = &NodeBank[*CurrentVal];
+					LoadedFileStream << "<";
+					if(targetNode->ChildNodes.empty())//Closed Tag
+					{
+					}
+					else
+					{
+						ResursivelySavingToFile(&LoadedFileStream, targetNode);
+						//++TabLevel;
+						//LoadedFileStream << "\n";
+						//LoadedFileStream << CreateWhitespace(TabLevel) << "<";
+					}
 					//iDocHeight = RecursivelyDrawNodes(pDC, targetNode, RootEnd, y + rNode.Height(), rFrame);
 				}
 			}
@@ -1072,7 +1131,7 @@ protected:
             }
             else//Single Argument Link
             {
-                TempText = " " + ArgElement.key[0]+"=\""+ArgElement.value[0] + "\"";
+                TempText = " " + ArgElement.key+"=\""+ArgElement.value[0] + "\"";
                 ArgElement.value.ArgStart = iPos;
                 iPos += HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, TempText.c_str());
             }
