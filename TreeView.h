@@ -1752,9 +1752,63 @@ protected:
         }
     }
 
+    void RecursivelyRetrieveDataNodeByPoint(CPoint& point, DataNode& LastNode)
+    {
+
+    }
+
+    /// <summary>
+    /// Retrieves the data node by point.(Attempting to avoid having to check every node when could possibly be inside lowest point of tree which could take too long if loaded really big animation .bhv)
+    /// </summary>
+    /// <param name="point">The point.</param>
     void RetrieveDataNodeByPoint(CPoint point)
     {
-    
+        TargetNode = nullptr;
+        SubTargetIndex = 0;
+        SubTargetType = 0;
+        //Narrow down on which node is nearest using Y-Axis
+        DataNode* LastNode = nullptr;
+        DataNode* targetNode;
+        UIntVector::iterator CurrentVal = RootNodes.begin();
+        LastNode = &NodeBank[*CurrentVal];
+        if (LastNode->CoordData.PtInRect(point))
+        {
+            TargetNode = LastNode;
+            return;
+        }
+        ++CurrentVal;
+        for (UIntVector::iterator LastVal = RootNodes.end(); TargetNode==nullptr&&CurrentVal != LastVal; ++CurrentVal)
+        {
+            targetNode = &NodeBank[*CurrentVal];
+            //iDocHeight = RecursivelyDrawNodes(pDC, targetNode, RootEnd, y + rNode.Height(), rFrame);
+            if(targetNode->CoordData.PtInRect(point))
+            {
+                TargetNode = targetNode;
+            }
+            else if(point.y>=targetNode->CoordData.top&& point.y <= targetNode->CoordData.bottom)//Y-Axis of point within coordinates of node
+            {
+                if(targetNode->NodeContent.size()==1&& targetNode->NodeContent[0].CoordData.PtInRect(point))//Check if point inside TagContent
+                {
+                    TargetNode = targetNode;
+                }
+                else if(targetNode->ArgData.size()>=1)//Check Argument fields
+                {
+                    TargetNode = targetNode;
+                    //Finding Specific Matching Argument Field under cursor
+                }
+                else
+                {
+                    std::cout << "Shouldn't be within these coordinates if not in TagContents/Argument Data";//Debug Breakpoint
+                    return;
+                }
+            }
+            else if(point.y > targetNode->CoordData.bottom)//Either is child node of LastNode or its one of it's TagContent
+            {
+
+                return;//Forcing exit of for loop
+            }
+            LastNode = targetNode;
+        }
     }
 
     void RetrieveNodeByPoint(CPoint point)
