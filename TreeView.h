@@ -1613,6 +1613,8 @@ protected:
         else if (VariableDataStart.CoordData.PtInRect(point)) { TargetRootNode = &VariableDataStart; }
         else if (AttriNameStart.CoordData.PtInRect(point)) { TargetRootNode = &AttriNameStart; }
         else if (CharPropStart.CoordData.PtInRect(point)) { TargetRootNode = &CharPropStart; }
+        else if (LinkageStart.CoordData.PtInRect(point)) { TargetRootNode = &LinkageStart; }
+        else if (LinkedConditionStart.CoordData.PtInRect(point)) { TargetRootNode = &LinkedConditionStart; }
         else { TargetRootNode = &TreeStart; }
     }
 
@@ -1777,10 +1779,6 @@ protected:
         }
     }
 
-    void AddTagContentNode(unsigned int TargetPIndex)
-    {
-
-    }
     // Message handlers
     void OnCM_DeleteNode()
     {
