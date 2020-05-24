@@ -184,42 +184,16 @@ protected:
     RootNode LinkedConditionStart = "Linked Condition Tree";
 
     /// <summary>
-    /// Toggle forces regeneration of linked event class Linked Node children(switch on when variable changed from EventDataStart children) 
+    /// Shortcuts RootNode
     /// </summary>
-    bool RegenerateEventLinks = false;
-    //Holds data of Name from hkbBehaviorGraphStringData(Event & Variable Names)
-    std::string StringDataName = "";
-    /// <summary>
-    /// Toggle forces regeneration of linked variable class Linked Node children(switch on when variable changed from VariableDataStart children) 
-    /// </summary>
-    bool RegenerateVariableLinks = false;
-    //Holds data of Name from hkbVariableValueSet (Variable Values)
-    std::string ValueDataName = "";
-    //Holds data of Name from hkbBehaviorGraphData (Variable Types)
-    std::string TypeDataName = "";
-    //Holds name of variableInitialValues class that stores link to Hk class of type hkbVariableValueSet
-    std::string variableInitialValues;
-    //Stores link to Hk class of type hkbBehaviorGraphStringData
-    std::string stringData;
+    RootNode ShortcutStart = "Shortcuts";
 
-    /* Don't really need to store information about other rarely edited fields since going to store the full hkclasses instead
-    //Holds data of Signature from hkbVariableValueSet (Variable Values)
-    std::string ValueDataSignature = "";
-    //Holds data of Signature from hkbBehaviorGraphData (Variable Types)
-    std::string TypeDataSignature = "";
-    //Holds data of Signature from hkbBehaviorGraphStringData(Event & Variable Names)
-    std::string StringDataSignature = "";
-    //Typically 4 Element Array of what seems to be coordinate positions
-    QuadVectorList quadVariableValues;
-    */
-
-    //
     /// <summary>
     /// The node type found (0=No Selectable Nodes found;1 = RootNode; 2 = InfoNode; 3 = DataNode)(Node Info for Message Handlers)
     /// </summary>
     short NodeTypeFound = 0;
     /// <summary>
-    /// The bank type(0=EventData;1=VariableData;3=AttriNameData;4=CharacterPropertyData;5=NodeLinkageData)
+    /// The bank type(0=EventData;1=VariableData;3=AttriNameData;4=CharacterPropertyData;5=NodeLinkageData;10=ShortcutNode)
     /// </summary>
     short TargetBankType = 0;
     /// <summary>
@@ -238,6 +212,26 @@ protected:
     /// The target node
     /// </summary>
     DataNode* TargetNode = nullptr;
+    /// <summary>
+    /// Root of tree for InfoNode on cursor
+    /// </summary>
+    unsigned int InfoNodeRoot = 0;
+    /// <summary>
+    /// The sub target highlighted (parameter/TagContent etc)
+    /// </summary>
+    std::string SubTarget;
+    /// <summary>
+    /// The sub target highlighted key (for parameter)
+    /// </summary>
+    std::string SubTargetKey;
+    /// <summary>
+    /// Index for value of ArgField if Parameter selected
+    /// </summary>
+    unsigned int SubTargetIndex = 0;
+    /// <summary>
+    /// The sub target type(1 = TabContent, 2 = ArgField, 3= Parameter)
+    /// </summary>
+    short SubTargetType = 0;
 
     //Index of Node that ClassNodes are within
     unsigned int ClassNodeStart = 0;
@@ -264,9 +258,7 @@ protected:
         {
             NumberArgs = ArgElement.value.size();
             LoadedFileStream << " " << ArgElement.key;
-            if (NumberArgs == 0)//Non-Value Element
-            {
-            }
+            if (NumberArgs == 0) {}//Non-Value Element
             else if (NumberArgs > 1)//MultiValue element
             {
 
@@ -1630,12 +1622,12 @@ protected:
     /// <param name="point">The point.</param>
     /// <param name="pNode">The pointer of target node</param>
     /// <param name="BankType">Type of the bank.</param>
-    /// <returns>InfoNode*</returns>
-    InfoNode* RecursiveInfoNodeSearch(const CPoint& point, InfoNode* pNode, short BankType)
+    void RecursiveInfoNodeSearch(const CPoint& point, InfoNode* pNode, short BankType)
     {
         if (pNode->CoordData.PtInRect(point))
         {
-            return pNode;
+            TargetInfoNode = pNode;
+            return;
         }
         else if (pNode->bOpen)
         {
@@ -1643,27 +1635,45 @@ protected:
             switch(BankType)//Using Switch to avoid checking type each loop(code same except for bank storage)
             {
             default:
-                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); TargetInfoNode == nullptr && targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     ChildNode = &this->EventBank[*targetNodeIndex];
+                    RecursiveInfoNodeSearch(point, ChildNode, BankType);
                 }
                 break;
             case 1:
-                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); TargetInfoNode == nullptr && targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     ChildNode = &this->VariableBank[*targetNodeIndex];
+                    RecursiveInfoNodeSearch(point, ChildNode, BankType);
                 }
                 break;
             case 2:
-                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); TargetInfoNode == nullptr && targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     ChildNode = &this->AttriNameBank[*targetNodeIndex];
+                    RecursiveInfoNodeSearch(point, ChildNode, BankType);
                 }
                 break;
             case 3:
-                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); TargetInfoNode == nullptr && targetNodeIndex != EndIndex; ++targetNodeIndex)
                 {
                     ChildNode = &this->CharPropBank[*targetNodeIndex];
+                    RecursiveInfoNodeSearch(point, ChildNode, BankType);
+                }
+                break;
+            case 4:
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); TargetInfoNode == nullptr && targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    ChildNode = &this->LinkageBank[*targetNodeIndex];
+                    RecursiveInfoNodeSearch(point, ChildNode, BankType);
+                }
+                break;
+            case 5:
+                for (UIntVector::iterator targetNodeIndex = pNode->ChildNodes.begin(), EndIndex = pNode->ChildNodes.end(); TargetInfoNode == nullptr && targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    ChildNode = &this->LinkedConditionBank[*targetNodeIndex];
+                    RecursiveInfoNodeSearch(point, ChildNode, BankType);
                 }
                 break;
             }
@@ -1676,6 +1686,7 @@ protected:
     /// <param name="point">The point.</param>
     void RetrieveInfoNodeByPoint(CPoint point)
     {
+        TargetInfoNode = nullptr;
         if(NodeSearchRange==0)
         {
             if (EventDataStart.bOpen && point.y > VariableDataStart.CoordData.top){ NodeSearchRange = 0; }
@@ -1683,11 +1694,56 @@ protected:
             else if (AttriNameStart.bOpen && point.y > CharPropStart.CoordData.top) { NodeSearchRange = 2; }
             else if (CharPropStart.bOpen) { NodeSearchRange = 3; }
         }
+        InfoNode* targetInfoNode = nullptr;
         switch (NodeSearchRange)
         {
         case 0://EventNode NodeTree
+            for (UIntVector::iterator targetNodeIndex = EventBank.RootNodes.begin(), EndIndex = EventBank.RootNodes.end(); TargetInfoNode==nullptr&&targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                InfoNodeRoot = *targetNodeIndex;
+                targetInfoNode = &EventBank[InfoNodeRoot];
+                RecursiveInfoNodeSearch(point, targetInfoNode, NodeSearchRange);
+            }
             break;
         case 1://VariableNode NodeTree
+            for (UIntVector::iterator targetNodeIndex = VariableBank.RootNodes.begin(), EndIndex = VariableBank.RootNodes.end(); TargetInfoNode == nullptr && targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                InfoNodeRoot = *targetNodeIndex;
+                targetInfoNode = &VariableBank[InfoNodeRoot];
+                RecursiveInfoNodeSearch(point, targetInfoNode, NodeSearchRange);
+            }
+            break;
+        case 2:
+            for (UIntVector::iterator targetNodeIndex = VariableBank.RootNodes.begin(), EndIndex = VariableBank.RootNodes.end(); TargetInfoNode == nullptr && targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                InfoNodeRoot = *targetNodeIndex;
+                targetInfoNode = &VariableBank[InfoNodeRoot];
+                RecursiveInfoNodeSearch(point, targetInfoNode, NodeSearchRange);
+            }
+            break;
+        case 3:
+            for (UIntVector::iterator targetNodeIndex = CharPropBank.RootNodes.begin(), EndIndex = CharPropBank.RootNodes.end(); TargetInfoNode == nullptr && targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                InfoNodeRoot = *targetNodeIndex;
+                targetInfoNode = &CharPropBank[InfoNodeRoot];
+                RecursiveInfoNodeSearch(point, targetInfoNode, NodeSearchRange);
+            }
+            break;
+        case 4:
+            for (UIntVector::iterator targetNodeIndex = LinkageBank.RootNodes.begin(), EndIndex = LinkageBank.RootNodes.end(); TargetInfoNode == nullptr && targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                InfoNodeRoot = *targetNodeIndex;
+                targetInfoNode = &LinkageBank[InfoNodeRoot];
+                RecursiveInfoNodeSearch(point, targetInfoNode, NodeSearchRange);
+            }
+            break;
+        case 5:
+            for (UIntVector::iterator targetNodeIndex = LinkedConditionBank.RootNodes.begin(), EndIndex = LinkedConditionBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+            {
+                InfoNodeRoot = *targetNodeIndex;
+                targetInfoNode = &LinkedConditionBank[InfoNodeRoot];
+                RecursiveInfoNodeSearch(point, targetInfoNode, NodeSearchRange);
+            }
             break;
         default:
             break;
@@ -1703,19 +1759,19 @@ protected:
     {
         if (point.x < RootEnd)//Search for RootNode nearest to point
         {
-            TargetRootNode = RetrieveNearestRootNode(point);
+            RetrieveNearestRootNode(point);
             NodeTypeFound = 1;
         }
         else
         {
             if (point.y > TreeStart.CoordData.bottom)//Main NodeTree nodes
             {
-                TargetNode = RetrieveDataNodeByPoint(point);
+                RetrieveDataNodeByPoint(point);
                 NodeTypeFound = 3;
             }
             else
             {
-                TargetInfoNode = RetrieveInfoNodeByPoint(point);
+                RetrieveInfoNodeByPoint(point);
                 NodeTypeFound = 2;
             }
         }
@@ -1858,7 +1914,6 @@ protected:
         //1=RootNode;2=InfoNode;3=DataNode
         NodeTypeFound = 0;
         TargetRootNode = nullptr;
-        TargetInfoNode = nullptr;
         TargetNode = nullptr;
 
         if (point.x < RootEnd)//Search for RootNode nearest to point
@@ -1917,19 +1972,19 @@ protected:
 
         if (point.x < RootEnd)//Search for RootNode nearest to point
         {
-            targetRootNode = RetrieveNearestRootNode(point);
-            if (targetRootNode != nullptr) { NodeTypeFound = 1; }
+            RetrieveNearestRootNode(point);
+            if (TargetRootNode != nullptr) { NodeTypeFound = 1; }
         }
         else
         {
             if (point.y > TreeStart.CoordData.bottom)//Main NodeTree nodes
             {
-                TargetNode = RetrieveDataNodeByPoint(point);
+                RetrieveDataNodeByPoint(point);
                 if (TargetNode != nullptr) { NodeTypeFound = 3; }
             }
             else
             {
-                TargetInfoNode = RetrieveInfoNodeByPoint(point);
+                RetrieveInfoNodeByPoint(point);
                 if (TargetInfoNode != nullptr) { NodeTypeFound = 2; }
             }
         }
@@ -1952,7 +2007,7 @@ protected:
             switch (NodeTypeFound)
             {
             case 1:
-                cs = targetRootNode->NodeName.c_str();
+                cs = TargetRootNode->NodeName.c_str();
                 cs = cs.Left(45) + ((TargetNode->TagName.size() > 45) ? _T("...") : _T(""));
                 break;
             case 2:
