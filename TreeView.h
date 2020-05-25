@@ -225,7 +225,7 @@ protected:
     /// </summary>
     std::string SubTargetKey;
     /// <summary>
-    /// Index for value of ArgField if Parameter selected
+    /// Index for value of ArgField if Parameter selected (or Index of TagContent if SubTargetType is 1)
     /// </summary>
     unsigned int SubTargetIndex = 0;
     /// <summary>
@@ -1800,6 +1800,18 @@ protected:
             }
             else if (point.y > targetNode->CoordData.bottom)//Either is child node of LastNode or its one of it's TagContent
             {
+                //Checking TagContent fields
+                if(!targetNode->NodeContent.empty())
+                {
+                    for (size_t Index = 0, ElemSize = targetNode->NodeContent.size(); Index < ElemSize; ++Index)
+                    {
+                        if (targetNode->NodeContent[Index].CoordData.PtInRect(point))
+                        {
+                            TargetNode = targetNode;
+                            SubTargetType = 1; SubTargetIndex = Index; return;
+                        }
+                    }
+                }
                 RecursivelyRetrieveDataNodeByPoint(point, LastNode);
                 return;//Forcing exit of for loop
             }
@@ -1871,6 +1883,18 @@ protected:
             }
             else if(point.y > targetNode->CoordData.bottom)//Either is child node of LastNode or its one of it's TagContent
             {
+                //Checking TagContent fields
+                if (!targetNode->NodeContent.empty())
+                {
+                    for (size_t Index = 0, ElemSize = targetNode->NodeContent.size(); Index < ElemSize; ++Index)
+                    {
+                        if (targetNode->NodeContent[Index].CoordData.PtInRect(point))
+                        {
+                            TargetNode = targetNode;
+                            SubTargetType = 1; SubTargetIndex = Index; return;
+                        }
+                    }
+                }
                 RecursivelyRetrieveDataNodeByPoint(point, LastNode);
                 return;//Forcing exit of for loop
             }
