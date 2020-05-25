@@ -1253,6 +1253,7 @@ protected:
                 TempText = " " + ArgElement.key;
                 ArgElement.value.ArgStart = iPos;
                 iPos += HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, TempText.c_str());
+                ArgElement.value[0].ArgPos = iPos;
                 nodeText += TempText;
             }
             else if (NumberArgs>1)//Multiple Linked Argument Elements
@@ -1261,14 +1262,12 @@ protected:
                 ArgElement.value.ArgStart = iPos;
                 iPos += HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, TempText.c_str());
                 nodeText += TempText;
-                std::vector<LONG>::iterator ArgPos = ArgElement.value.ArgPositions.begin();
                 for (ArgStringList::iterator Arg = ArgElement.value.begin(), FirstArg = Arg, LastArg = ArgElement.value.end(); Arg != LastArg; ++Arg)
                 {
-                    TempText = Arg != FirstArg? *Arg: ", "+ *Arg;
+                    TempText = Arg != FirstArg? Arg->Value: ", "+ Arg->Value;
                     //Add Starting position data into ArgStringList
-                    *ArgPos = iPos;
+                    Arg->ArgPos = iPos;
                     iPos += HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, TempText.c_str());
-                    ++ArgPos;
                 }
                 TempText += "\"";
                 ++iPos;
@@ -1278,6 +1277,7 @@ protected:
                 TempText = " " + ArgElement.key+"=\""+ArgElement.value[0] + "\"";
                 ArgElement.value.ArgStart = iPos;
                 iPos += HowMuchTextFits(pDC, rFrame.right - m_iPadding - rNode.left, TempText.c_str());
+                ArgElement.value[0].ArgPos = iPos;
             }
         }
         //Draw only if the node is visible
