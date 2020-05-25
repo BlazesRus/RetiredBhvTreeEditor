@@ -1771,10 +1771,26 @@ protected:
                 {
                     TargetNode = targetNode; SubTargetType = 1;
                 }
-                else if (targetNode->ArgData.size() >= 1)//Check Argument fields
+                else if (!targetNode->ArgData.empty())//Check Argument fields
                 {
                     TargetNode = targetNode;
-                    //Finding Specific Matching Argument Field under cursor
+                    //Finding Specific Matching Argument Field under cursor(Set SubTargetType to either 2 or 3 and SubTargetKey as related arg key)
+                    for (ArgList::iterator ArgElement = targetNode->ArgData.begin(), EndElement = targetNode->ArgData.end(); ArgElement != EndElement; ++ArgElement)//Shouldn't need to include SubTargetType==0&& conditional
+                    {
+                        SubTargetKey = ArgElement.key;
+                        if (point.x <= ArgElement.value.ArgStart)
+                        {
+                            SubTargetType = 2; return;
+                        }
+                        ;
+                        for (size_t Index = 0, ArgElemSize = ArgElement.value.size(); Index < ArgElemSize; ++Index)//Need position data so using normal for loop instead of iterator based loop
+                        {
+                            if (point.x <= ArgElement.value[Index].ArgPos)
+                            {
+                                SubTargetType = 3; SubTargetIndex = Index; return;
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -1826,10 +1842,26 @@ protected:
                 {
                     TargetNode = targetNode; SubTargetType = 1;
                 }
-                else if(targetNode->ArgData.size()>=1)//Check Argument fields
+                else if(!targetNode->ArgData.empty())//Check Argument fields
                 {
                     TargetNode = targetNode;
                     //Finding Specific Matching Argument Field under cursor(Set SubTargetType to either 2 or 3 and SubTargetKey as related arg key)
+                    for (ArgList::iterator ArgElement = targetNode->ArgData.begin(), EndElement = targetNode->ArgData.end(); ArgElement != EndElement; ++ArgElement)//Shouldn't need to include SubTargetType==0&& conditional
+                    {
+                        SubTargetKey = ArgElement.key;
+                        if (point.x <= ArgElement.value.ArgStart)
+                        {
+                            SubTargetType = 2; return;
+                        }
+                        ;
+                        for(size_t Index=0, ArgElemSize = ArgElement.value.size();Index< ArgElemSize;++Index)//Need position data so using normal for loop instead of iterator based loop
+                        {
+                            if(point.x <= ArgElement.value[Index].ArgPos)
+                            {
+                                SubTargetType = 3; SubTargetIndex = Index; return;
+                            }
+                        }
+                    }
                 }
                 else
                 {
