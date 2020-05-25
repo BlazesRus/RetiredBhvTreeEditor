@@ -1752,9 +1752,43 @@ protected:
         }
     }
 
-    void RecursivelyRetrieveDataNodeByPoint(CPoint& point, DataNode& LastNode)
+    void RecursivelyRetrieveDataNodeByPoint(CPoint& point, DataNode* LastNode)
     {
-
+        DataNode* targetNode = nullptr;
+        UIntVector::iterator CurrentVal = LastNode->ChildNodes.begin();
+        UIntVector::iterator EndIndex = LastNode->ChildNodes.end();
+        LastNode = &NodeBank[*CurrentVal];
+        for (++CurrentVal;CurrentVal != EndIndex; ++CurrentVal)
+        {
+            targetNode = &this->NodeBank[*CurrentVal];
+            if (targetNode->CoordData.PtInRect(point))
+            {
+                TargetNode = targetNode;
+            }
+            else if (point.y >= targetNode->CoordData.top && point.y <= targetNode->CoordData.bottom)//Y-Axis of point within coordinates of node
+            {
+                if (targetNode->NodeContent.size() == 1 && targetNode->NodeContent[0].CoordData.PtInRect(point))//Check if point inside TagContent
+                {
+                    TargetNode = targetNode; SubTargetType = 1;
+                }
+                else if (targetNode->ArgData.size() >= 1)//Check Argument fields
+                {
+                    TargetNode = targetNode;
+                    //Finding Specific Matching Argument Field under cursor
+                }
+                else
+                {
+                    std::cout << "Shouldn't be within these coordinates if not in TagContents/Argument Data";//Debug Breakpoint
+                    return;
+                }
+            }
+            else if (point.y > targetNode->CoordData.bottom)//Either is child node of LastNode or its one of it's TagContent
+            {
+                RecursivelyRetrieveDataNodeByPoint(point, LastNode);
+                return;//Forcing exit of for loop
+            }
+            LastNode = targetNode;
+        }
     }
 
     /// <summary>
@@ -1764,6 +1798,7 @@ protected:
     void RetrieveDataNodeByPoint(CPoint point)
     {
         TargetNode = nullptr;
+        SubTargetKey = "";
         SubTargetIndex = 0;
         SubTargetType = 0;
         //Narrow down on which node is nearest using Y-Axis
@@ -1789,12 +1824,12 @@ protected:
             {
                 if(targetNode->NodeContent.size()==1&& targetNode->NodeContent[0].CoordData.PtInRect(point))//Check if point inside TagContent
                 {
-                    TargetNode = targetNode;
+                    TargetNode = targetNode; SubTargetType = 1;
                 }
                 else if(targetNode->ArgData.size()>=1)//Check Argument fields
                 {
                     TargetNode = targetNode;
-                    //Finding Specific Matching Argument Field under cursor
+                    //Finding Specific Matching Argument Field under cursor(Set SubTargetType to either 2 or 3 and SubTargetKey as related arg key)
                 }
                 else
                 {
@@ -1804,7 +1839,7 @@ protected:
             }
             else if(point.y > targetNode->CoordData.bottom)//Either is child node of LastNode or its one of it's TagContent
             {
-
+                RecursivelyRetrieveDataNodeByPoint(point, LastNode);
                 return;//Forcing exit of for loop
             }
             LastNode = targetNode;
