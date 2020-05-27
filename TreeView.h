@@ -187,9 +187,20 @@ protected:
     /// Shortcuts RootNode
     /// </summary>
     RootNode ShortcutStart = "Shortcuts";
+	
+    /// <summary>
+    /// Data from Linked skeleton data
+    /// </summary>
+    RootNode SkeletonBhvStart = "Skeleton Bhv Tree";
+    /// <summary>
+    /// Data from Linked skeleton data
+    /// </summary>
+    RootNode SkeletonModelStart = "Skeleton Node Data";
+	//NifNodeTree BoneTree;
+	DataDictionary BoneNodeBank;
 
     /// <summary>
-    /// The node type found (0=No Selectable Nodes found;1 = RootNode; 2 = InfoNode; 3 = DataNode)(Node Info for Message Handlers)
+    /// The node type found (0=No Selectable Nodes found;1 = RootNode; 2 = InfoNode; 3 = DataNode; 4 = BoneDataNode; 5=NifNode)(Node Info for Message Handlers)
     /// </summary>
     short NodeTypeFound = 0;
     /// <summary>
@@ -337,9 +348,101 @@ protected:
             LoadedFileStream << "<" << targetNode->TagName << "/>";
         }
     }
+	
+    void ResursivelySavingBoneDataToFile(std::fstream& LoadedFileStream, DataNode* targetNode, int TabLevel = 0)
+    {
+        if (TabLevel != 0)
+        {
+            LoadedFileStream << CreateWhitespace(TabLevel);
+        }
+        LoadedFileStream << "<" << targetNode->TagName;
+        size_t NumberArgs;
+        for (ArgList::iterator ArgElement = targetNode->ArgData.begin(), EndElement = targetNode->ArgData.end(); ArgElement != EndElement; ++ArgElement)
+        {
+            NumberArgs = ArgElement.value.size();
+            LoadedFileStream << " " << ArgElement.key;
+            if (NumberArgs == 0) {}//Non-Value Element
+            else if (NumberArgs > 1)//MultiValue element
+            {
+
+            }
+            else//SingleValue Element
+            {
+                LoadedFileStream << "=\"" << ArgElement.value[0] << "\"";
+            }
+        }
+        //Writing TagContent and ChildNodes to file
+        if (targetNode->NodeContent.empty())
+        {//Going to assume those with tag content aren't going to have child nodes for now
+            if (targetNode->ChildNodes.empty())
+            {
+                LoadedFileStream << "/>";
+            }
+            else
+            {//Writing ChildNodes to file
+                DataNode* childNode = nullptr;
+                for (UIntVector::iterator childNodeIndex = targetNode->ChildNodes.begin(), EndIndex = targetNode->ChildNodes.end(); childNodeIndex != EndIndex; ++childNodeIndex)
+                {
+                    childNode = &BoneNodeBank[*childNodeIndex];
+                    ResursivelySavingBoneDataToFile(LoadedFileStream, childNode, TabLevel + 1);
+                }
+                LoadedFileStream << "\n";
+                if (TabLevel != 0)
+                {
+                    LoadedFileStream << CreateWhitespace(TabLevel);
+                }
+                LoadedFileStream << "</" << targetNode->TagName << ">";
+            }
+        }
+        else if (targetNode->NodeContent.size() == 1)
+        {
+            LoadedFileStream << targetNode->NodeContent[0].Content << "<" << targetNode->TagName << "/>";
+        }
+        else
+        {
+            if (targetNode->NodeType == 50)//QuadVector format hkparam variable such as(axisOfRotation)
+            {
+                LoadedFileStream << "(" << targetNode->NodeContent[0].Content << " " << targetNode->NodeContent[1].Content << " " << targetNode->NodeContent[2].Content << " " << targetNode->NodeContent[3].Content << ")";
+            }
+            else if (targetNode->NodeType == 51)//Multi-line QuadVector format
+            {
+                int RowPosition = 0;
+                LoadedFileStream << "\n"<<CreateWhitespace(TabLevel + 1) << "(";
+                for (TagContentVector::iterator targetNodeIndex = targetNode->NodeContent.begin(), EndIndex = targetNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    if (RowPosition == 4)
+                    {
+                        LoadedFileStream << ")\n";
+                        RowPosition = 0;
+                        LoadedFileStream << CreateWhitespace(TabLevel + 1) << "(";
+                    }
+                    else if (RowPosition != 0) { LoadedFileStream << " "; }
+                    LoadedFileStream << *targetNodeIndex->Content;
+                    ++RowPosition;
+                }
+            }
+            else
+            {
+                int RowPosition = 0;
+                LoadedFileStream << "\n" << CreateWhitespace(TabLevel + 1);
+                for (TagContentVector::iterator targetNodeIndex = targetNode->NodeContent.begin(), EndIndex = targetNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                {
+                    if (RowPosition == 16)//Allow 16 Elements per line
+                    {
+                        LoadedFileStream << "\n";
+                        RowPosition = 0;
+                    }
+                    else if (RowPosition != 0) { LoadedFileStream << " "; }
+                    LoadedFileStream << *targetNodeIndex->Content;
+                    ++RowPosition;
+                }
+            }
+            LoadedFileStream << "<" << targetNode->TagName << "/>";
+        }
+    }
     
     /// <summary>
-    /// Saves the loaded data to file. (if / or \ is last character, will instead append BhvFile.xml)
+    /// Saves the loaded data to file. (if / or \ is last character, will instead create/replace BhvFile.xml)
     /// </summary>
     /// <param name="FilePath">The file path. or file name </param>
     void SaveDataToFile(std::string FilePath)
@@ -469,7 +572,154 @@ protected:
                     {
                         ResursivelySavingToFile(LoadedFileStream, targetNode);
                     }
-                    //iDocHeight = RecursivelyDrawNodes(pDC, targetNode, RootEnd, y + rNode.Height(), rFrame);
+                }
+            }
+            else
+            {
+                if(LoadedFileStream.bad()) { std::cout << "Failed Read/Write operation Error!\n"; }
+                else if(LoadedFileStream.fail()) { std::cout << "Failed format based Error!\n"; }
+                else if(LoadedFileStream.bad()) { std::cout << "Failed Read/Write operation Error!\n"; }
+                else if(LoadedFileStream.eof()) {/*Send debug message of reaching end of file?*/ }
+            }
+            LoadedFileStream.close();
+        }
+        else
+        {
+            std::cout << "Failed to open " << FilePath << ".\n";
+        }
+    }
+
+    /// <summary>
+    /// Saves the loaded skeleton bhv data to file. (if / or \ is last character, will instead create/replace BoneBhv.xml)
+    /// </summary>
+    /// <param name="FilePath">The file path. or file name </param>
+    void SaveDataToFile(std::string FilePath)
+    {
+        //int TabLevel=0;
+        DataNode* targetNode;
+        
+        if (FilePath.back() == '/' || FilePath.back() == '\\'){ FilePath += "BoneBhv.xml"; }
+        size_t StringLength;
+        char StringChar;
+        std::string LineString;
+        std::fstream LoadedFileStream;
+        //Fix for non-existing file
+        CreateFileIfDoesntExist(FilePath);
+        LoadedFileStream.open(FilePath.c_str(), std::fstream::out | std::fstream::trunc);
+        if(LoadedFileStream.is_open())
+        {
+            if(LoadedFileStream.good())
+            {//Saving to file now
+                UIntVector::iterator CurrentVal = RootNodes.begin();
+                targetNode = &BoneNodeBank[*CurrentVal];
+                if(targetNode->ChildNodes.empty())//Closed Tag
+                {
+                    if(targetNode->NodeType==3)
+                    {
+                        LoadedFileStream << "<?xml version=\"1.0\" encoding=\"ascii\"?>";
+                    }
+                    else
+                    {
+                        LoadedFileStream << "<"<<targetNode->TagName;
+                        size_t NumberArgs;
+                        for(ArgList::iterator ArgElement = targetNode->ArgData.begin(), EndElement = targetNode->ArgData.end(); ArgElement != EndElement; ++ArgElement)
+                        {
+                            NumberArgs = ArgElement.value.size();
+                            LoadedFileStream <<" "<<ArgElement.key;
+                            if (NumberArgs == 0)//Non-Value Element
+                            {} else if(NumberArgs>1)//MultiValue element
+                            {
+                                
+                            }
+                            else//SingleValue Element
+                            {
+                                LoadedFileStream <<"=\""<<ArgElement.value[0]<<"\"";
+                            }
+                        }
+                        if (targetNode->NodeContent.empty())
+                        {
+                            if (targetNode->ChildNodes.empty())
+                            {
+                                LoadedFileStream << "/>";
+                            }
+                            else
+                            {//Writing ChildNodes to file
+                                DataNode* childNode = nullptr;
+                                for (UIntVector::iterator childNodeIndex = targetNode->ChildNodes.begin(), EndIndex = targetNode->ChildNodes.end(); childNodeIndex != EndIndex; ++childNodeIndex)
+                                {
+                                    childNode = &BoneNodeBank[*childNodeIndex];
+                                    ResursivelySavingToFile(LoadedFileStream, childNode, 1);
+                                }
+                                LoadedFileStream << "\n</" << targetNode->TagName << ">";
+                            }
+                        }
+                        else if(targetNode->NodeContent.size()==1)
+                        {
+                            LoadedFileStream << targetNode->NodeContent[0].Content<<"<" <<targetNode->TagName<< "/>";
+                        }
+                        else
+                        {
+                            if (targetNode->NodeType == 50)//QuadVector format hkparam variable such as(axisOfRotation)
+                            {
+                                LoadedFileStream << "(" << targetNode->NodeContent[0].Content << " " << targetNode->NodeContent[1].Content << " " << targetNode->NodeContent[2].Content << " " << targetNode->NodeContent[3].Content << ")";
+                            }
+                            else if (targetNode->NodeType == 51)//Multi-line QuadVector format
+                            {
+                                int RowPosition = 0;
+                                LoadedFileStream << "\n    (";
+                                for (TagContentVector::iterator targetNodeIndex = targetNode->NodeContent.begin(), EndIndex = targetNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                                {
+                                    if (RowPosition == 4)
+                                    {
+                                        LoadedFileStream << ")\n";
+                                        RowPosition = 0;
+                                        LoadedFileStream << "    (";
+                                    }
+                                    else if (RowPosition != 0) { LoadedFileStream << " "; }
+                                    LoadedFileStream << *targetNodeIndex->Content;
+                                    ++RowPosition;
+                                }
+                            }
+                            else
+                            {
+                                int RowPosition = 0;
+                                LoadedFileStream << "\n    ";
+                                for (TagContentVector::iterator targetNodeIndex = targetNode->NodeContent.begin(), EndIndex = targetNode->NodeContent.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
+                                {
+                                    if (RowPosition == 16)//Allow 16 Elements per line
+                                    {
+                                        LoadedFileStream << "\n";
+                                        RowPosition = 0;
+                                    }
+                                    else if (RowPosition != 0) { LoadedFileStream << " "; }
+                                    LoadedFileStream << *targetNodeIndex->Content;
+                                    ++RowPosition;
+                                }
+                            }
+                            LoadedFileStream << "<" << targetNode->TagName << "/>";
+                        }
+                    }
+                }
+                else
+                {
+
+                }
+                ++CurrentVal;
+                for (UIntVector::iterator LastVal = RootNodes.end(); CurrentVal != LastVal; ++CurrentVal)
+                {
+                    //Carriage Return to next line
+                    LoadedFileStream << "\n";
+                    
+                    targetNode = &BoneNodeBank[*CurrentVal];
+                    LoadedFileStream << "<";
+                    if(targetNode->ChildNodes.empty())//Closed Tag
+                    {
+
+                    }
+                    else
+                    {
+                        ResursivelySavingBoneDataToFile(LoadedFileStream, targetNode);
+                    }
                 }
             }
             else
