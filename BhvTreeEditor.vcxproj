@@ -41,7 +41,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
-    <BlazesGlobalCode>C:\Users\BlazesRus\Documents\GitHub\MultiPlatformGlobalCode\GlobalCode</BlazesGlobalCode>
+    <BlazesGlobalCode>C:\UserFiles\GitHub\MultiPlatformGlobalCode\GlobalCode</BlazesGlobalCode>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <LinkIncremental>true</LinkIncremental>
@@ -171,6 +171,7 @@
     <ClInclude Include="DataDictionary.h" />
     <ClInclude Include="DataNode.h" />
     <ClInclude Include="InfoDataDictionary.h" />
+    <ClInclude Include="NifNodeTree.h" />
     <ClInclude Include="OrderedIndexDictionary.h" />
     <ClInclude Include="RootNode.h" />
     <ClInclude Include="TagContentVector.h" />

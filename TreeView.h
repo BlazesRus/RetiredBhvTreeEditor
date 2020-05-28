@@ -23,7 +23,10 @@
 //#include "IniData/IndexedDictionary.h"
 //#include "VariableLists/VariableTypeLists.h"
 #include "..\DynMultiView\MultiViewDoc.h"
-#include "QuadVector\QuadVector.h"
+//#include "QuadVector\QuadVector.h"
+#include <iostream>
+#include <fstream>
+#include "NifNodeTree.h"
 
 //#include "ArgList.h"
 //#include "VariableTypeLists.h"
