@@ -172,7 +172,12 @@
     <ClInclude Include="DataNode.h" />
     <ClInclude Include="HighlightedNodeData.h" />
     <ClInclude Include="InfoDataDictionary.h" />
-    <ClInclude Include="NifNodeTree.h" />
+    <ClInclude Include="NifNodeTree.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="OrderedIndexDictionary.h" />
     <ClInclude Include="RootNode.h" />
     <ClInclude Include="TagContentVector.h" />

@@ -192,15 +192,16 @@ protected:
     /// <summary>
     /// Data from Linked skeleton data
     /// </summary>
-    RootNode SkeletonBhvStart = "Skeleton Bhv Tree";
+    RootNode SkeletonBhvStart = "Skeleton Behavior Tree";
     /// <summary>
     /// Data from Linked skeleton data
     /// </summary>
     RootNode SkeletonModelStart = "Skeleton Node Data";
-	//NifNodeTree BoneTree;
-    //Temporarily setting as InfoDataDictionary instead
-    InfoDataDictionary BoneTree;
+
 	DataDictionary BoneNodeBank;
+    //NifNodeTree BoneTree;
+//Temporarily setting as InfoDataDictionary instead
+    InfoDataDictionary BoneTree;
 
     /// <summary>
     /// The node type found (0=No Selectable Nodes found;1 = RootNode; 2 = InfoNode; 3 = DataNode; 4 = BoneDataNode; 5=NifNode)(Node Info for Message Handlers)
@@ -593,7 +594,7 @@ protected:
     }
 
     /// <summary>
-    /// Saves the loaded skeleton bhv data to file. (if / or \ is last character, will instead create/replace BoneBhv.xml)
+    /// Saves the loaded skeleton behavior data to file. (if / or \ is last character, will instead create/replace BoneBhv.xml)
     /// </summary>
     /// <param name="FilePath">The file path. or file name </param>
     void SaveDataToFile(std::string FilePath)
@@ -1282,7 +1283,7 @@ protected:
     }
 
     /// <summary>
-    /// Draws single-line non-clickable TagContentNode
+    /// Draws single-line non-click-able TagContentNode
     /// </summary>
     /// <param name="pDC">The document pointer.</param>
     /// <param name="pNode">The pointer of target node</param>
@@ -1416,7 +1417,7 @@ protected:
     }
 
     /// <summary>
-    /// Draws clickable TagContentNode(Returns X+iPos)
+    /// Draws click-able TagContentNode(Returns X+iPos)
     /// </summary>
     /// <param name="pDC">The document pointer.</param>
     /// <param name="DataContent">Content of the data.</param>
@@ -1493,7 +1494,6 @@ protected:
         //-------------------------------------------------------------------------------------------------------
 
         size_t NumberArgs;
-        //for (auto ArgElement : pNode->ArgData)//Draw rest of Nodes based on Args
         for(ArgList::iterator ArgElement = pNode->ArgData.begin(), EndElement = pNode->ArgData.end(); ArgElement != EndElement; ++ArgElement)
         {
             NumberArgs = ArgElement.value.size();
@@ -1623,7 +1623,7 @@ protected:
             // Loop until we can fit no more of the text
             while (iPixelWidth < iAvailableWidth)
             {
-                iValidSoFar = iNextBlank;							// Record the char pos so far
+                iValidSoFar = iNextBlank;							// Record the character position so far
                 iNextBlank = csText.Find(' ', iNextBlank + 1);	// Advance one word at a time
 
                 // Have reached the end of the string?
@@ -2106,7 +2106,7 @@ protected:
                 else if(!targetNode->ArgData.empty())//Check Argument fields
                 {
                     TargetNode = targetNode;
-                    //Finding Specific Matching Argument Field under cursor(Set SubTargetType to either 2 or 3 and SubTargetKey as related arg key)
+                    //Finding Specific Matching Argument Field under cursor(Set SubTargetType to either 2 or 3 and SubTargetKey as related argument key)
                     for (ArgList::iterator ArgElement = targetNode->ArgData.begin(), EndElement = targetNode->ArgData.end(); ArgElement != EndElement; ++ArgElement)//Shouldn't need to include SubTargetType==0&& conditional
                     {
                         SubTargetKey = ArgElement.key;
@@ -2410,70 +2410,94 @@ protected:
                 cs = TargetNode->TagName.c_str();
                 cs = cs.Left(45) + ((TargetNode->TagName.size() > 45) ? _T("...") : _T(""));
                 break;
+            case 4:
+                cs = TargetNode->TagName.c_str();
+                cs = cs.Left(45) + ((TargetNode->TagName.size() > 45) ? _T("...") : _T(""));
+                break;
+            case 5:
+                cs = TargetNode->TagName.c_str();
+                cs = cs.Left(45) + ((TargetNode->TagName.size() > 45) ? _T("...") : _T(""));
+                break;
             }
             contextMenuPopUp.AppendMenuItem(MF_DISABLED, WM_APP, cs, pDC);
             contextMenuPopUp.AppendMenuItem(MF_SEPARATOR, 0, _T(""), pDC);
-            if (NodeTypeFound == 1)
+
+            if(SubTargetType==0)
             {
-                contextMenuPopUp.AppendMenuItem(MF_DISABLED, 0, _T("Setting NodeSearchRange to this section"), pDC);
-                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Load Tree from file"), pDC);
-                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Save Tree to .xml file"), pDC);
-            }
-            else if (NodeTypeFound == 2)
-            {
-                switch (NodeSearchRange)
+                if (NodeTypeFound == 1)
                 {
-                case 1:
-                    contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Add New Variable"), pDC);
-                    //contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Copy Event to Other View"), pDC);
-                case 2:
-                    contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Add New Variable"), pDC);
-                    //contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Copy Event to Other View"), pDC);
-                default:
-                    break;
+                    contextMenuPopUp.AppendMenuItem(MF_DISABLED, 0, _T("Setting NodeSearchRange to this section"), pDC);
+                    contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Load Tree from file"), pDC);
+                    contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Save Tree to .xml file"), pDC);
                 }
-                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Node"), pDC);
-            }
-            else
-            {
-                switch (TargetNode->NodeType)
+                else if (NodeTypeFound == 2)
                 {
-                    //Event Link
+                    switch (NodeSearchRange)
+                    {
+                    case 1:
+                        contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Add New Variable"), pDC);
+                        //contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Copy Event to Other View"), pDC);
+                    case 2:
+                        contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Add New Variable"), pDC);
+                        //contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Copy Event to Other View"), pDC);
+                    default:
+                        break;
+                    }
+                    contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Node"), pDC);
+                }
+                else
+                {
+                    contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Node"), pDC);
+                }
+            }
+            else if(SubTargetType==1)
+            {
+                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYNODETEXT, _T("Modify TabContent Text"), pDC);
+            }
+            else if(SubTargetType==2)
+            {
+                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYNODETEXT, _T("Modify Argument Field Text"), pDC);
+            }
+            else if (SubTargetType == 3)
+            {
+                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYNODETEXT, _T("Modify Argument Parameter Text"), pDC);
+            }
+/*
+                    switch (TargetNode->NodeType)
+                    {
+                        //Event Link
                     case 92:
                     case 101:
                     case 111:
                         break;
-                    //Variable Link
+                        //Variable Link
                     case 93:
                     case 102:
                     case 112:
                         break;
-                    //ClassNode Link
+                        //ClassNode Link
                     case 94:
                     case 103:
                     case 113:
                         break;
-                    //Character Property Link
+                        //Character Property Link
                     case 95:
                     case 104:
                     case 114:
                         break;
-                    //Attribute Name Link
+                        //Attribute Name Link
                     case 96:
                     case 105:
                     case 115:
                         break;
                     default:
                         break;
-                }
-                if (TargetNode->NodeType == 90)
-                {
-                    //contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Arg Data"), pDC);
-                }
-                else { contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Node"), pDC); }
-                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYNODETEXT, _T("Modify Node Text"), pDC);
-                //contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_TOGGLECONNECTINGLINES, _T("Toggle Connecting Lines"), pDC);
-            }
+                    }
+                    if (TargetNode->NodeType == 90)
+                    {
+                        //contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Argument Data"), pDC);
+                    }
+                    else { contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Node"), pDC); }
             switch (TargetNode->NodeType)
             {
             case 89:
@@ -2495,6 +2519,7 @@ protected:
 
                 break;
             }
+*/
             // ADDING MENU ITEMS - End
 
             // Display the context menu
