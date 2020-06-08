@@ -71,7 +71,7 @@ class DataNode
     char NodeType;
 
 	/// <summary>
-	/// The b open
+	/// Is Node Open
 	/// </summary>
 	BOOL    bOpen;
 	

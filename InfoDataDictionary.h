@@ -25,7 +25,7 @@ class InfoNode
 	std::string TagContent;
 
 	/// <summary>
-	/// The b open
+	/// If true, the Node is Open
 	/// </summary>
 	BOOL    bOpen;
 	

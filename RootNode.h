@@ -13,7 +13,7 @@ class RootNode
 	std::string NodeName;
 
 	/// <summary>
-	/// The b open
+	/// If true, the Node is Open
 	/// </summary>
 	BOOL    bOpen;
 	

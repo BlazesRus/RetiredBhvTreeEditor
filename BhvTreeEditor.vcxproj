@@ -170,6 +170,7 @@
     <ClInclude Include="ContextMenu.h" />
     <ClInclude Include="DataDictionary.h" />
     <ClInclude Include="DataNode.h" />
+    <ClInclude Include="HighlightedNodeData.h" />
     <ClInclude Include="InfoDataDictionary.h" />
     <ClInclude Include="NifNodeTree.h" />
     <ClInclude Include="OrderedIndexDictionary.h" />

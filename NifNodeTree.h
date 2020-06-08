@@ -4,6 +4,7 @@
 #pragma once
 
 #include "OrderedIndexDictionary.h"
+#include <vector>
 
 /// <summary>
 /// Class named NifNode(derive into NifNode subclass into view). (Node links to other nodes in node bank)
@@ -22,9 +23,9 @@ class NifNode
 	UIntVector ChildNodes;
 
 	/// <summary>
-	/// The b open(Temporarily autosettings as OPEN)
+	/// If true, the Node is Open(Temporarily auto-set as OPEN)
 	/// </summary>
-	static BOOL    bOpen = TRUE;
+	const static BOOL bOpen = TRUE;
 	
 	/// <summary>
 	/// Node Coordinate Data(Current Position of Node in Tree)
@@ -78,7 +79,7 @@ public:
 class NifNodeTree : public OrderedIndexDictionary<NifNode>
 {
 	private:
-		using NiObjectList = list<Niflib::Ref<Niflib::NiObject> >;
+		using NiObjectList = std::vector<Niflib::Ref<Niflib::NiObject> >;
 public:
 	UIntVector RootNodes;
 /*		//************************************

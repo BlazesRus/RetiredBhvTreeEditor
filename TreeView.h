@@ -26,10 +26,8 @@
 //#include "QuadVector\QuadVector.h"
 #include <iostream>
 #include <fstream>
-#include "NifNodeTree.h"
 
-//#include "ArgList.h"
-//#include "VariableTypeLists.h"
+//#include "NifNodeTree.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -200,6 +198,8 @@ protected:
     /// </summary>
     RootNode SkeletonModelStart = "Skeleton Node Data";
 	//NifNodeTree BoneTree;
+    //Temporarily setting as InfoDataDictionary instead
+    InfoDataDictionary BoneTree;
 	DataDictionary BoneNodeBank;
 
     /// <summary>
@@ -766,8 +766,8 @@ public:
     /// Sets the text font.
     /// </summary>
     /// <param name="nHeight">Height of the n.</param>
-    /// <param name="bBold">The b bold.</param>
-    /// <param name="bItalic">The b italic.</param>
+    /// <param name="bBold">If true, is set as bold.</param>
+    /// <param name="bItalic">If true, is set as italic.</param>
     /// <param name="csFaceName">Name of the font applied</param>
     virtual void SetTextFont(LONG nHeight, BOOL bBold, BOOL bItalic, const CString& csFaceName)
     {
@@ -818,9 +818,9 @@ public:
     /// Sets the text settings.
     /// </summary>
     /// <param name="nHeight">Height of the n.</param>
-    /// <param name="bBold">The b bold.</param>
-    /// <param name="bItalic">The b italic.</param>
-    /// <param name="csFaceName">Name of the cs face.</param>
+    /// <param name="bBold">If true, is set as bold.</param>
+    /// <param name="bItalic">If true, is set as italic.</param>
+    /// <param name="csFaceName">Name of the font face.</param>
     /// <param name="textColor">The color of the text</param>
     virtual void SetTextSettings(LONG nHeight, BOOL bBold, BOOL bItalic, const CString& csFaceName, COLORREF textColor)
     {
@@ -910,8 +910,8 @@ protected:
     /// <summary>
     /// Adds all sub nodes.
     /// </summary>
-    /// <param name="pNode">The p node.</param>
-    /// <param name="TargetNodes">The target nodes.</param>
+    /// <param name="pNode">The node pointer</param>
+    /// <param name="TargetNodes">The target nodes</param>
     void AddAllSubNodes(DataNode* pNode, UIntVector& TargetNodes)
     {
         DataNode* targetNode;
@@ -982,7 +982,7 @@ protected:
     /// Deletes the node.
     /// </summary>
     /// <param name="nodeIndex">Index of the node.</param>
-    /// <param name="bInvalidate">The b invalidate.</param>
+    /// <param name="bInvalidate">If true, trigger the invalidation of the nodes.</param>
     void DeleteNode(unsigned int nodeIndex, BOOL bInvalidate = FALSE)
     {
         UIntVector TargetNodes;
@@ -1011,7 +1011,7 @@ protected:
     /// </summary>
     /// <param name="nodeIndex">Index of the node.</param>
     /// <param name="BankType">Type of the bank.</param>
-    /// <param name="bInvalidate">The b invalidate.</param>
+    /// <param name="bInvalidate">If true, trigger the invalidation of the nodes.</param>
     void DeleteInfoNode(unsigned int nodeIndex, short BankType, BOOL bInvalidate = FALSE)
     {
         UIntVector TargetNodes;
@@ -1129,7 +1129,7 @@ protected:
     /// <summary>
     /// Draws the nodes from root.
     /// </summary>
-    /// <param name="pDC">The p dc.</param>
+    /// <param name="pDC">The document pointer.</param>
     /// <param name="x">The x.</param>
     /// <param name="y">The y.</param>
     /// <param name="rFrame">The r frame.</param>
@@ -1165,7 +1165,7 @@ protected:
             for (UIntVector::iterator targetNodeIndex = EventBank.RootNodes.begin(), EndIndex = EventBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetInfoNode = &this->EventBank[*targetNodeIndex];
-                iDocHeight = RecursivelyDrawInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 0);
+                iDocHeight = RecursivelyDrawInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, iDocHeight, 0);
             }
         }
 
@@ -1181,7 +1181,7 @@ protected:
             for (UIntVector::iterator targetNodeIndex = VariableBank.RootNodes.begin(), EndIndex = VariableBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetInfoNode = &this->VariableBank[*targetNodeIndex];
-                iDocHeight = RecursivelyDrawInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 1);
+                iDocHeight = RecursivelyDrawInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, iDocHeight, 1);
             }
         }
 
@@ -1197,7 +1197,7 @@ protected:
             for (UIntVector::iterator targetNodeIndex = AttriNameBank.RootNodes.begin(), EndIndex = AttriNameBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetInfoNode = &this->AttriNameBank[*targetNodeIndex];
-                iDocHeight = RecursivelyDrawInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 2);
+                iDocHeight = RecursivelyDrawInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, iDocHeight, 2);
             }
         }
 
@@ -1213,7 +1213,7 @@ protected:
             for (UIntVector::iterator targetNodeIndex = CharPropBank.RootNodes.begin(), EndIndex = CharPropBank.RootNodes.end(); targetNodeIndex != EndIndex; ++targetNodeIndex)
             {
                 targetInfoNode = &this->CharPropBank[*targetNodeIndex];
-                iDocHeight = RecursivelyDrawInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, 3);
+                iDocHeight = RecursivelyDrawInfoNodes(pDC, targetInfoNode, RootEnd, y + rNode.Height(), rFrame, iDocHeight, 3);
             }
         }
 //---------------------------------------------------------------------------------------
@@ -1241,17 +1241,15 @@ protected:
     /// <summary>
     /// Draws the tag content node.
     /// </summary>
-    /// <param name="pDC">The p dc.</param>
-    /// <param name="pNode">The p node.</param>
-    /// <param name="x">The x.</param>
-    /// <param name="y">The y.</param>
-    /// <param name="rFrame">The r frame.</param>
-    /// <param name="iDocHeight">Height of the i document.</param>
-    /// <returns>int.</returns>
+    /// <param name="pDC">The document pointer.</param>
+    /// <param name="pNode">The pointer of target node</param>
+    /// <param name="x">X position of node</param>
+    /// <param name="y">Y position of node</param>
+    /// <param name="rFrame">Frame Coordinates</param>
+    /// <param name="iDocHeight">Total document height</param>
     template <typename NodeType>
-    int DrawTagContentNode(CDC* pDC, NodeType* pNode, int x, int y, CRect rFrame, int iDocHeight)
+    int DrawTagContentNode(CDC* pDC, NodeType* pNode, int x, int y, CRect rFrame, int iDocHeight=0)
     {
-        int		iDocHeight = 0;		// Total document height
         CRect	rNode;
         CRect	TotalNodeArea;
 
@@ -1292,9 +1290,8 @@ protected:
     /// <param name="y">Y position of node</param>
     /// <param name="rFrame">Frame Coordinates</param>
     /// <param name="iDocHeight">Total document height</param>
-    void DrawTagContentInfo(CDC* pDC, CString nodeText, int x, int y, CRect rFrame, int iDocHeight)
+    void DrawTagContentInfo(CDC* pDC, CString nodeText, int x, int y, CRect rFrame, int iDocHeight=0)
     {
-        int		iDocHeight = 0;		// Total document height
         CRect	rNode;
 
         // The node's location and dimensions on screen
@@ -1333,7 +1330,6 @@ protected:
     /// <returns>int</returns>
     int RecursivelyDrawInfoNodes(CDC* pDC, InfoNode* pNode, int x, int y, CRect rFrame, int iDocHeight, short BankType)
     {
-        int		iDocHeight = 0;		// Total document height
         CRect	rNode;
 
         // The node's location and dimensions on screen

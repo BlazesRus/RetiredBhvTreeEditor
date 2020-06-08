@@ -191,6 +191,9 @@
     <ClInclude Include="NifNodeTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HighlightedNodeData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AppResources.rc">
