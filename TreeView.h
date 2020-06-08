@@ -2180,7 +2180,7 @@ protected:
     }
     void OnCM_DeleteInfoNode()
     {
-        //DeleteNode(m_pSelected, TRUE);
+        DeleteInfoNode(TargetIndex, TargetBankType, TRUE);
     }
     void OnCM_ModifyNodeText()
     {
@@ -2191,7 +2191,7 @@ protected:
     }
     void OnCM_ModifyInfoNodeText()
     {
-        if (NodeTextDlg(TargetNode->TagName) == TRUE)
+        if (NodeTextDlg(TargetInfoNode->TagName) == TRUE)
         {
             Invalidate();
         }
