@@ -1818,12 +1818,12 @@ protected:
         m_bScrollBarMessage = FALSE;
     }
 
-    BOOL NodeTextDlg(CString& csText)
+    BOOL NodeTextDlg(std::string& csText)
     {
         BOOL				bRet = FALSE;
         TreeNodeText	tntDlg;
 
-        tntDlg.m_csItemText = csText;
+        tntDlg.m_csItemText = csText.c_str();
 
         if (tntDlg.DoModal() == IDOK)
         {
@@ -2176,14 +2176,40 @@ protected:
     // Message handlers
     void OnCM_DeleteNode()
     {
+        DeleteNode(TargetIndex, TRUE);
+    }
+    void OnCM_DeleteInfoNode()
+    {
         //DeleteNode(m_pSelected, TRUE);
     }
     void OnCM_ModifyNodeText()
     {
-/*		if (NodeTextDlg(m_pSelected->DisplayName) == TRUE)
+		if (NodeTextDlg(TargetNode->TagName) == TRUE)
         {
             Invalidate();
-        }*/
+        }
+    }
+    void OnCM_ModifyInfoNodeText()
+    {
+        if (NodeTextDlg(TargetNode->TagName) == TRUE)
+        {
+            Invalidate();
+        }
+    }
+
+    void CM_ModifyContentText()
+    {
+
+    }
+
+    void CM_ModifyArgFieldText()
+    {
+
+    }
+
+    void CM_ModifyArgParameterText()
+    {
+
     }
 
     //void OnCM_ToggleConnectingLines()
@@ -2443,24 +2469,27 @@ protected:
                     default:
                         break;
                     }
+                    contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYINFONODETEXT, _T("Modify Node Text"), pDC);
                     contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Node"), pDC);
                 }
                 else
                 {
+                    contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYNODETEXT, _T("Modify Node Text"), pDC);
                     contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_DELETENODE, _T("Delete Node"), pDC);
                 }
+
             }
             else if(SubTargetType==1)
             {
-                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYNODETEXT, _T("Modify TabContent Text"), pDC);
+                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYCONTENTTEXT, _T("Modify TabContent Text"), pDC);
             }
             else if(SubTargetType==2)
             {
-                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYNODETEXT, _T("Modify Argument Field Text"), pDC);
+                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYFIELDTEXT, _T("Modify Argument Field Text"), pDC);
             }
             else if (SubTargetType == 3)
             {
-                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYNODETEXT, _T("Modify Argument Parameter Text"), pDC);
+                contextMenuPopUp.AppendMenuItem(MF_ENABLED, CM_MODIFYPARAMETER, _T("Modify Argument Parameter Text"), pDC);
             }
 /*
                     switch (TargetNode->NodeType)
@@ -2544,7 +2573,12 @@ BEGIN_MESSAGE_MAP(TreeView, CView)
     ON_WM_MOUSEWHEEL()
     ON_WM_CONTEXTMENU()
     ON_COMMAND(CM_DELETENODE, OnCM_DeleteNode)
+    ON_COMMAND(CM_DELETENODE, OnCM_DeleteInfoNode)
     ON_COMMAND(CM_MODIFYNODETEXT, OnCM_ModifyNodeText)
+    ON_COMMAND(CM_MODIFYINFONODETEXT, OnCM_ModifyNodeText)
+    ON_COMMAND(CM_MODIFYCONTENTTEXT, CM_ModifyContentText)
+    ON_COMMAND(CM_MODIFYFIELDTEXT, CM_ModifyArgFieldText)
+    ON_COMMAND(CM_MODIFYPARAMETER, CM_ModifyArgParameterText)
     //ON_COMMAND(CM_TOGGLECONNECTINGLINES, OnCM_ToggleConnectingLines)
     //ON_COMMAND(CM_SETCONNECTINGLINESCOLOR, OnCM_SetConnectingLinesColor)
     //ON_COMMAND(CM_SETFONT, OnCM_SetFont)
