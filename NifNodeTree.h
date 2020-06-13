@@ -3,8 +3,15 @@
 // ***********************************************************************
 #pragma once
 
-#include "OrderedIndexDictionary.h"
+#include "StdBhvTree.h"
 #include <vector>
+#include "tsl\ordered_map.h"
+#include "../BasicXMLGUI/UIntVector.h"
+#include <map>
+//Loading from Niflib
+#include "niflib.h"
+#include "obj/NiAVObjectRef.h"
+#include "obj/NiAVObject.h"
 
 /// <summary>
 /// Class named NifNode(derive into NifNode subclass into view). (Node links to other nodes in node bank)
@@ -25,45 +32,19 @@ class NifNode
 	/// <summary>
 	/// If true, the Node is Open(Temporarily auto-set as OPEN)
 	/// </summary>
-	const static BOOL bOpen = TRUE;
+	const static bool bOpen = true;
 	
 	/// <summary>
 	/// Node Coordinate Data(Current Position of Node in Tree)
 	/// </summary>
 	CRect		CoordData;
 	
-	//std::string TagName;
-	//std::string TagContent;
+	Niflib::NiObject ObjectData;
 	
-/*	public:
-		//0 : Not ExtraData Node
-		//1 : Unspecified ExtraData Node(not connected on main NodeTree as child etc but connected to a node or more)
-		unsigned __int8 IsExtraDataNode = 0;
-		//Used mainly just during NifImport time (NodeTreeGlobals::ValueNotSet = blocknumber not set)
-		size_t internal_block_number = NodeTreeGlobals::ValueNotSet();
-		//NodeType of Actual Node stored inside Object Registry
-		std::string NodeType = "";
-		//Index of actual node inside VariableList with name NodeType (NodeTreeGlobals::ValueNotSet = value not set in most cases)
-		size_t IndexInRegistry = NodeTreeGlobals::ValueNotSet();
-		void ResetNode()
-		{
-			Reset();
-			internal_block_number = NodeTreeGlobals::ValueNotSet();
-			NodeType = "";
-			IndexInRegistry = NodeTreeGlobals::ValueNotSet();
-		}*/
-public:
-/*	/// <summary>
-	/// Initializes a new instance of the <see cref="NifNode"/> class. (All Data Nodes must have display names)
-	/// </summary>
-	/// <param name="name">The NodeName.</param>
-	NifNode(std::string name)
+	std::string GetNodeType()
 	{
-		TagName = name;
-		TagContent = "";
-		CoordData.SetRectEmpty();
-		bOpen = TRUE;
-	}*/
+	
+	}
 	
 	NifNode()
 	{
@@ -76,70 +57,14 @@ public:
 	~NifNode(){}
 };
 
-class NifNodeTree : public OrderedIndexDictionary<NifNode>
+class NifNodeTree : public std::map<unsigned int, NifNode>
 {
+//Keys to the dictionary are equivalent of old internal block number code
 	private:
 		using NiObjectList = std::vector<Niflib::Ref<Niflib::NiObject> >;
 public:
-	UIntVector RootNodes;
-/*		//************************************
-		// Returns false if either current index is max int64 value(highly unlikely) or undetected ObjectType detected
-		// Method:    CreateObject
-		// FullName:  NifNodeTreeData::NifNodeTree::CreateObject
-		// Access:    public
-		// Returns:   bool
-		// Qualifier:
-		// Parameter: const std::string ObjectType
-		//************************************
-		bool CreateObject(const std::string ObjectType);
-		//Running Read command on last loaded Node
-		void ReadObjectFromStream(std::string ObjectType, istream& in, list<unsigned int> & link_stack, const Niflib::NifInfo & info);
-
-		//Niflib::NiObjectRef ReadNifNodeTree(istream & in, Niflib::NifInfo * info = NULL)
-		//{
-		//	//Read object list
-		//	vector<Niflib::NiObjectRef> objects = Niflib::ReadNifList(in, info);
-		//	return FindRoot_NodeTree(objects);
-		//}
-		void ReadNifNodeTree(istream & in, NiObjectList & missing_link_stack, Niflib::NifInfo * info = NULL);
-		//Temporary Method for Importing NifFile(Called from ReadNifNodeTree)
-		void ReadNifNodeTree(istream & in, Niflib::NifInfo * info)
-		{
-			using namespace Niflib;
-			if(Size() != 0)
-			{
-				ResetData();
-			}
-			list<NiObjectRef> missing_link_stack;
-			ReadNifNodeTree(in, missing_link_stack, info);
-		}
-		void ReadNifNodeTree(string const & file_name, Niflib::NifInfo * info = NULL)
-		{
-			using namespace Niflib;
-			if(Size() != 0)
-			{
-				ResetData();
-			}
-			//--Open File--//
-			ifstream in(file_name.c_str(), ifstream::binary);
-			ReadNifNodeTree(in, info);
-			in.close();
-		}
-		void ImportNifFile(string const & FileName)
-		{
-			using namespace Niflib;
-			NifInfo Info;
-			ReadNifNodeTree(FileName, &Info);
-		}
-		void inline ReadNifNodeTree(string const & FileName)
-		{//Need to create non-address based version of Niflib::ReadNifTree
-			ImportNifFile(FileName);
-		}
-	void Reset()
-	{
-		this->clear();
-		RootNodes.clear();
-	}*/
+	//UIntVector RootNodes;
+	unsigned int RootIndex;
 	Niflib::NiObjectRef FindRoot_NodeTree(vector<Niflib::NiObjectRef> const & objects)
 	{
 		using namespace Niflib;
@@ -164,14 +89,33 @@ public:
 		}
 		return StaticCast<NiObject>(root);
 	}
-	void NifNodeTree::ReadNifNodeTree(istream & in, NiObjectList & missing_link_stack, Niflib::NifInfo * info = NULL)
+
+	/// <summary>
+	/// Alternative version of loading code based on niflib intro_page.html documentation
+	/// </summary>
+	void BasicNifTreeLoad(std::string current_file)
+	{
+        try 
+		{
+            //Niflib Function Call
+            vector<NiObject> objects = ReadNifList(current_file);
+        }
+        catch (exception & e) {
+            cout << "Error: " << e.what() << endl;
+            return 0;
+        }
+        catch (...) {
+            cout << "Unknown Exception." << endl;
+            return 0;
+        }
+	}
+	void NifNodeTree::ReadNifNodeTree(std::istream & in, NiObjectList & missing_link_stack, Niflib::NifInfo * info = NULL)
 	{
 		using namespace Niflib;
 		if(Size() != 0)
 		{
 			ResetData();
 		}
-		//NifNode StorageNode;
 
 		//--Read Header--//
 		Header header;
@@ -277,7 +221,7 @@ public:
 				if(objectTypeLength > 30 || objectTypeLength < 6)
 				{
 					errStream << "Read failue - Bad object position.  Invalid Type Name Length:  " << objectTypeLength << endl;
-					throw runtime_error(errStream.str());
+					throw std::runtime_error(errStream.str());
 				}
 				char* charobjectType = new char[objectTypeLength + 1];
 				in.read(charobjectType, objectTypeLength);
@@ -326,9 +270,9 @@ public:
 			//These newer verisons use their position in the file as their index
 			index = i;
 		}
-		//Read new object data from Stream
-		FixCurrentNodeData();
-		CurrentNode->internal_block_number = index;
+		////Read new object data from Stream
+		//FixCurrentNodeData();
+		//insert_or_assign(index, Value);//index = internal_block_number
 		ReadObjectFromStream(objectType, in, link_stack, *info);
 
 			// Ending position of block in stream
@@ -388,44 +332,18 @@ public:
 		// clear the header pointer in the stream.  Should be in try/catch block
 		hdrInfo hinfo2(NULL);
 		in >> hinfo2;
-
-/*		
-		//obj_list;
+		
 		//Now Arrange and add nodes from obj_list to NodeTree in correct order(move from LooseNodes section to tree/Extra Data links as find nodes)
-		//First try finding
-		//"NiAVObjectRef
-		std::string InternalNameTemp;
-		std::string RootInternalName = "";
-		NifNode* NodePointer = nullptr;
-		size_t SizeTemp = BaseLooseNode.Size();
-		for(size_t Index = 0; Index < SizeTemp&&RootInternalName == "";++Index)
-		{
-			//Note:The actual node data isn't moved at all here
-			InternalNameTemp = BaseLooseNode.ElementAt(Index);
-			NodePointer = GetNodePointerFromInternalName(InternalNameTemp);
-			if(NodePointer->NodeType=="NiAVObjectRef")
+		bool RootNotFound=true;
+		NifNode* TargetNode = nullptr;
+		for (NifNodeTree::iterator targetNodeIndex = this->begin(), EndIndex = this->end(); TargetInfoNode==nullptr&&RootNotFound; ++targetNodeIndex)
+        {
+			if(targetNodeIndex*.GetNodeType()=="NiAVObjectRef"&&targetNodeIndex*.ObjectData->GetParent()==NULL)//If has no parent assume is Root
 			{
-				RootInternalName = NodePointer->InternalName;
-				
-				//Finish moving up chain code later
-				//NodePointer
-				//Move up the chain to the root node
-				//while(root->GetParent() != NULL)
-				//{
-				//	root = StaticCast<NiAVObject>(root->GetParent());
-				//}
-				
+				RootNotFound = false;
+				RootIndex = targetNodeIndex->first;
 			}
 		}
-		//Make sure a node was found, if not return first node
-		if(RootInternalName=="")
-		{
-			NodePointer = GetElementPointerV2(0);
-			RootInternalName = NodePointer->InternalName;
-		}
-		//Move RootPointer from LooseNode list and add to RootNodelist
-		MoveNode(RootInternalName,"(Core)");
-		//Organize and move rest from looseNode list*/
 	}
 
 	NifNodeTree(string const & FileName)
