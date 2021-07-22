@@ -1,0 +1,20 @@
+-Store last opened node info
+(Invisible RootNode)
+	-Options
+	-PrimaryFile
+		-FileName
+		-LoadedData
+		-SkeletonBhvData
+		-SkeletonNifData
+		-NodeUseOrder(Only after generate)
+	-SecondaryFile
+		-FileName
+		-LoadedData
+		-SkeletonBhvData
+		-SkeletonNifData
+		-NodeUseOrder(Only after generate)
+	-MergedFile(SubentriesCreated on combine)
+		-LoadedData
+		-SkeletonBhvData
+		-SkeletonNifData
+	-ExtraFiles
